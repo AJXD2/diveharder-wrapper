@@ -2,7 +2,7 @@
 
 A Helldivers 2 API wrapper using the [Diveharder API](https://github.com/helldivers-2/diveharder_api.py).
 
-> **Warning**
+> [!WARNING]
 > 
 > This project is still under heavy development. Expect things to break in the future. There be dragons ahead.
 
