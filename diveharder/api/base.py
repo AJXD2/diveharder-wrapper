@@ -36,6 +36,7 @@ class ApiBase:
         override_headers=None,
         data_as_json=True,
         includes=None,
+        raw=False,
     ):
         """Make a request to the DiveHarder API.
 
@@ -119,7 +120,6 @@ class ApiBase:
             return response
         else:
             return response_json or response
-
 
     @property
     def client(self):
