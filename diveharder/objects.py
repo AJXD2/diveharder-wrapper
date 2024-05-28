@@ -283,6 +283,20 @@ class PlanetInfo(BaseObject):
     def planet(self):
         return self.client.planets[self._index]
 
+    @classmethod
+    def from_json(cls, client, json):
+        return cls(
+            client,
+            index=json["index"],
+            settings_hash=json["settingsHash"],
+            position=json["position"],
+            waypoints=json["waypoints"],
+            sector=json["sector"],
+            max_health=json["maxHealth"],
+            disabled=json["disabled"],
+            initial_owner=json["initialOwner"],
+        )
+
 
 class HomeWorldInfo(BaseObject):
     def __init__(self, client, race: int, planets: List[int]) -> None:
@@ -294,6 +308,14 @@ class HomeWorldInfo(BaseObject):
     @property
     def planets(self):
         return [self.client.planets[id] for id in self._planet_ids]
+
+    @classmethod
+    def from_json(cls, client, json):
+        return cls(
+            client,
+            race=json["race"],
+            planets=json["planetIndices"],
+        )
 
 
 class WarInfo(BaseObject):
@@ -308,18 +330,66 @@ class WarInfo(BaseObject):
         planet_infos: List[PlanetInfo],
         home_worlds: List[HomeWorldInfo],
         capital_infos: List[Any],
-        planetPermanentEffects: List[Any],
+        planet_permanent_effects: List[Any],
     ) -> None:
+        """
+        Initializes a WarInfo object with the given parameters.
+
+        Args:
+            client: The client object.
+            war_id (int): The ID of the war.
+            start_date (int): The start date of the war.
+            end_date (int): The end date of the war.
+            layout_version (int): The version of the layout.
+            minimum_client_version (str): The minimum client version required.
+            planet_infos (List[PlanetInfo]): A list of PlanetInfo objects.
+            home_worlds (List[HomeWorldInfo]): A list of HomeWorldInfo objects.
+            capital_infos (List[Any]): A list of capital information.
+            planet_permanent_effects (List[Any]): A list of permanent effects on planets.
+
+        Returns:
+            None
+        """
+
         super().__init__(client)
         self.war_id = war_id
-        self.start_date = start_date
-        self.end_date = end_date
+        self._start_date = start_date
+        self._end_date = end_date
         self.layout_version = layout_version
         self.minimum_client_version = minimum_client_version
         self.planet_infos = planet_infos
         self.home_worlds = home_worlds
         self.capital_infos = capital_infos
-        self.planetPermanentEffects = planetPermanentEffects
+        self.planet_permanent_effects = planet_permanent_effects
+
+    @property
+    def start_date(self) -> datetime:
+        return datetime.fromtimestamp(self._start_date)
+
+    @property
+    def end_date(self) -> datetime:
+        return datetime.fromtimestamp(self._end_date)
+
+    @classmethod
+    def from_json(cls, client, json):
+        return cls(
+            client,
+            json["warId"],
+            json["startDate"],
+            json["endDate"],
+            json["layoutVersion"],
+            json["minimumClientVersion"],
+            [
+                PlanetInfo.from_json(client, planet_info)
+                for planet_info in json["planetInfos"]
+            ],
+            [
+                HomeWorldInfo.from_json(client, home_world)
+                for home_world in json["homeWorlds"]
+            ],
+            json["capitalInfos"],
+            json["planetPermanentEffects"],
+        )
 
 
 class Dispatch(BaseObject):
@@ -727,6 +797,7 @@ class Planet(BaseObject):
         Returns:
             PlanetStatus: The status of the planet.
         """
+
         if self._cache.get("status") is None:
             self._cache["status"] = self.client.status.get_planet_status(self)
 
