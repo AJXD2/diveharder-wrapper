@@ -123,6 +123,30 @@ class PlanetStatistics(BaseObject):
         accurracy: int,
         planetIndex: int,
     ) -> None:
+        """
+        A class used to represent the statistics of a planet.
+
+        Args:
+            client (DiveHarderApiClient): The client object used to make API requests.
+            missionsWon (int): The number of missions won.
+            missionsLost (int): The number of missions lost.
+            missionTime (int): The total time spent on missions.
+            bugKills (int): The number of bug kills.
+            automatonKills (int): The number of automaton kills.
+            illuminateKills (int): The number of illuminate kills.
+            bulletsFired (int): The number of bullets fired.
+            bulletsHit (int): The number of bullets hit.
+            timePlayed (int): The total time played.
+            deaths (int): The number of deaths.
+            revives (int): The number of revives.
+            friendlies (int): The number of friendly kills.
+            missionSuccessRate (int): The success rate of missions.
+            accurracy (int): The accuracy of bullets.
+            planetIndex (int): The index of the planet.
+
+        Returns:
+            None
+        """
         super().__init__(client)
 
         self.missionsWon = missionsWon
@@ -167,7 +191,7 @@ class GalaxyStatistics(BaseObject):
         accurracy: int,
     ) -> None:
         """
-
+        A class used to represent the statistics of the galaxy (global statistics).
 
         Args:
             client (DiveHarderApiClient): The client object used to make API requests.
@@ -222,6 +246,9 @@ class GlobalStatistics(BaseObject):
             client: The DiveHarderApiClient instance used to interact with the API.
             galaxy_statistics (GalaxyStatistics): The statistics of the galaxy.
             planet_statistics (List[PlanetStatistics]): The statistics of the planets.
+
+        Returns:
+            None
         """
         super().__init__(client)
         self.galaxy_statistics = galaxy_statistics
