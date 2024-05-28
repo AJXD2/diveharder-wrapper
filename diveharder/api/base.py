@@ -120,9 +120,6 @@ class ApiBase:
         else:
             return response_json or response
 
-    @property
-    def all(self):
-        return self._client.all
 
     @property
     def client(self):

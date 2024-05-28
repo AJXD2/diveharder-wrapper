@@ -41,8 +41,67 @@ def campaigns():
     print(table)
 
 
+def planet(id: int = None):
+    if id is None:
+        with Status("Loading planets...") as status:
+            planets = list(api.planets.get_planets())
+            table = Table(
+                "ID",
+                "Name",
+                "Sector",
+                "Biome",
+                "Enviromentals",
+                "Faction",
+                "Players",
+                title="Planets",
+            )
+            for i in planets:
+                status.update(
+                    f"Loading {i.name}({planets.index(i)/len(planets):.2%})..."
+                )
+                table.add_row(
+                    str(i.id),
+                    i.name,
+                    i.sector,
+                    i.biome.name,
+                    ", ".join([i.name for i in i.enviromentals]),
+                    i.status.faction.name,
+                    str(i.status.players),
+                )
+
+        print(table)
+        return
+    print(id)
+    planet = api.planets.get_planet(id)
+
+    table = Table(
+        "ID",
+        "Name",
+        "Sector",
+        "Biome",
+        "Enviromentals",
+        "Faction",
+        "Players",
+        title="Planets",
+    )
+    table.add_row(
+        str(planet.id),
+        planet.name,
+        planet.sector,
+        planet.biome.name,
+        ", ".join([i.name for i in planet.enviromentals]),
+        planet.status.faction.name,
+        str(planet.status.players),
+    )
+
+    print(table)
+
+
+cli = {"campaigns": campaigns, "planets": planet}
+
+
 def main() -> None:
-    fire.Fire({"campaigns": campaigns})
+    fire.Fire(cli)
 
 
 if __name__ == "__main__":

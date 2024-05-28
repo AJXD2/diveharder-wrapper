@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class BetterEnum(Enum):
-
+    @classmethod
     def parse(cls, value):
         try:
             return cls(value)

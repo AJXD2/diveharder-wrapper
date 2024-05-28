@@ -4,7 +4,13 @@ import re
 from typing import Any, List
 
 
-from diveharder.enums import CampaignTypes, MajorOrderTypes, RewardTypes, ValueTypes
+from diveharder.enums import (
+    CampaignTypes,
+    Factions,
+    MajorOrderTypes,
+    RewardTypes,
+    ValueTypes,
+)
 from diveharder.utils import hdml_to_md
 
 
@@ -12,6 +18,7 @@ class BaseObject:
     """
     Base class for all other DiveHarder API objects.
     """
+
     def __init__(self, client) -> None:
         """
         Initializes a new instance of the BaseObject class.
@@ -109,13 +116,7 @@ class Dispatch(BaseObject):
     """
 
     def __init__(
-        self,
-        client,
-        id: int,
-        published: int,
-        type: int,
-        tagIds: list,
-        message: str
+        self, client, id: int, published: int, type: int, tagIds: list, message: str
     ):
         """
         Initializes a new instance of the Dispatch class.
@@ -415,6 +416,7 @@ class PlanetStatus(BaseObject):
         health: int,
         regen: float,
         players: int,
+        faction: Factions,
     ) -> None:
         """
         Initializes a new instance of the PlanetStatus class.
@@ -431,6 +433,7 @@ class PlanetStatus(BaseObject):
         self.health = health
         self.regen = regen
         self.players = players
+        self.faction = faction
 
     @classmethod
     def from_json(cls, client, planet, json):
@@ -452,8 +455,8 @@ class PlanetStatus(BaseObject):
             health=json["health"],
             regen=json["regenPerSecond"],
             players=json["players"],
+            faction=Factions.parse(json["owner"]),
         )
-        
 
 
 class Planet(BaseObject):
@@ -523,7 +526,6 @@ class Planet(BaseObject):
             self._cache["campaign"] = self.client.campaigns.get_campaign_by_planet(self)
 
             return self._cache["campaign"]
-        
 
         return self._cache["campaign"]
 
