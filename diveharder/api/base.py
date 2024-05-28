@@ -36,6 +36,7 @@ class ApiBase:
         override_headers=None,
         data_as_json=True,
         includes=None,
+        raw=False,
     ):
         """Make a request to the DiveHarder API.
 
@@ -61,8 +62,10 @@ class ApiBase:
         """
         if not endpoint:
             raise BadRequestError("No API endpoint was specified.")
-
-        url = url_join(self._url, "v1", endpoint)
+        if raw:
+            url = url_join(self._url, "raw", endpoint)
+        else:
+            url = url_join(self._url, "v1", endpoint)
         headers = self._get_headers()
         if override_headers:
             headers.update(override_headers)
@@ -119,7 +122,6 @@ class ApiBase:
             return response
         else:
             return response_json or response
-
 
     @property
     def client(self):

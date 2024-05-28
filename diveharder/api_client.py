@@ -8,6 +8,7 @@ from diveharder.api.dispatches import Dispatches
 from diveharder.api.planets import Planets
 from diveharder.api.stats import Statistics
 from diveharder.api.status import StatusAPI
+from diveharder.api.war_info import WarInfoAPI
 from diveharder.constants import OFFICIAL_DIVEHARDER_URL, __version__
 from diveharder.utils import url_join
 
@@ -65,6 +66,10 @@ class DiveHarderApiClient:
     @property
     def statistics(self) -> Statistics:
         return Statistics(self, self._session, self._url, self._user_agent)
+
+    @property
+    def war_info(self) -> WarInfoAPI:
+        return WarInfoAPI(self, self._session, self._url, self._user_agent)
 
     @property
     def campaigns(self) -> Campaigns:
