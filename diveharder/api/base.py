@@ -62,8 +62,10 @@ class ApiBase:
         """
         if not endpoint:
             raise BadRequestError("No API endpoint was specified.")
-
-        url = url_join(self._url, "v1", endpoint)
+        if raw:
+            url = url_join(self._url, "raw", endpoint)
+        else:
+            url = url_join(self._url, "v1", endpoint)
         headers = self._get_headers()
         if override_headers:
             headers.update(override_headers)
