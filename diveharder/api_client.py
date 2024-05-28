@@ -20,7 +20,7 @@ def retry_adapter(
         total=retries,
         status_forcelist=retry_codes,
         backoff_factor=backoff_factor,
-        allowed_methods=["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"],
+        allowed_methods=["GET"],
     )
     return HTTPAdapter(max_retries=retry_strategy)
 
@@ -46,7 +46,6 @@ class DiveHarderApiClient:
         self._url = url
         self._session = requests.Session()
         self._session.mount("https://", retry_adapter(backoff_factor, retry_count, []))
-        self._session.mount("http://", retry_adapter(backoff_factor, retry_count, []))
         self._user_agent = user_agent
         set_logger(debug)
 
