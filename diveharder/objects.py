@@ -103,6 +103,131 @@ class BaseObject:
         return f"{self.__class__.__name__}({self.__dict__})"
 
 
+class PlanetStatistics(BaseObject):
+    def __init__(
+        self,
+        client,
+        missionsWon: int,
+        missionsLost: int,
+        missionTime: int,
+        bugKills: int,
+        automatonKills: int,
+        illuminateKills: int,
+        bulletsFired: int,
+        bulletsHit: int,
+        timePlayed: int,
+        deaths: int,
+        revives: int,
+        friendlies: int,
+        missionSuccessRate: int,
+        accurracy: int,
+        planetIndex: int,
+    ) -> None:
+        super().__init__(client)
+
+        self.missionsWon = missionsWon
+        self.missionsLost = missionsLost
+        self.missionTime = missionTime
+        self.bugKills = bugKills
+        self.automatonKills = automatonKills
+        self.illuminateKills = illuminateKills
+        self.bulletsFired = bulletsFired
+        self.bulletsHit = bulletsHit
+        self.timePlayed = timePlayed
+        self.deaths = deaths
+        self.revives = revives
+        self.friendlies = friendlies
+        self.missionSuccessRate = missionSuccessRate
+        self.accurracy = accurracy
+        self._planet_index = planetIndex
+
+    @property
+    def planet(self):
+        return self.client.planets[self._planet_index]
+
+
+class GalaxyStatistics(BaseObject):
+
+    def __init__(
+        self,
+        client,
+        missionsWon: int,
+        missionsLost: int,
+        missionTime: int,
+        bugKills: int,
+        automatonKills: int,
+        illuminateKills: int,
+        bulletsFired: int,
+        bulletsHit: int,
+        timePlayed: int,
+        deaths: int,
+        revives: int,
+        friendlies: int,
+        missionSuccessRate: int,
+        accurracy: int,
+    ) -> None:
+        """
+
+
+        Args:
+            client (DiveHarderApiClient): The client object used to make API requests.
+            missionsWon (int): The number of missions won.
+            missionsLost (int): The number of missions lost.
+            missionTime (int): The total time spent on missions.
+            bugKills (int): The number of bug kills.
+            automatonKills (int): The number of automaton kills.
+            illuminateKills (int): The number of illuminate kills.
+            bulletsFired (int): The number of bullets fired.
+            bulletsHit (int): The number of bullets hit.
+            timePlayed (int): The total time played.
+            deaths (int): The number of deaths.
+            revives (int): The number of revives.
+            friendlies (int): The number of friendly kills.
+            missionSuccessRate (int): The success rate of missions.
+            accuracy (int): The accuracy of bullets.
+
+        Returns:
+            None
+        """
+
+        super().__init__(client)
+
+        self.missions_won = missionsWon
+        self.missions_lost = missionsLost
+        self.mission_time = missionTime
+        self.bug_kills = bugKills
+        self.automaton_kills = automatonKills
+        self.illuminate_kills = illuminateKills
+        self.bullets_fired = bulletsFired
+        self.bullets_hit = bulletsHit
+        self.time_played = timePlayed
+        self.deaths = deaths
+        self.revives = revives
+        self.friendlies = friendlies
+        self.mission_success_rate = missionSuccessRate
+        self.accurracy = accurracy
+
+
+class GlobalStatistics(BaseObject):
+    def __init__(
+        self,
+        client,
+        galaxy_statistics: GalaxyStatistics,
+        planet_statistics: List[PlanetStatistics],
+    ) -> None:
+        """
+        Initializes a new instance of the GlobalStatistics class.
+
+        Args:
+            client: The DiveHarderApiClient instance used to interact with the API.
+            galaxy_statistics (GalaxyStatistics): The statistics of the galaxy.
+            planet_statistics (List[PlanetStatistics]): The statistics of the planets.
+        """
+        super().__init__(client)
+        self.galaxy_statistics = galaxy_statistics
+        self.planet_statistics = planet_statistics
+
+
 class Dispatch(BaseObject):
     """
     Represents a dispatch message from the DiveHarder API.
