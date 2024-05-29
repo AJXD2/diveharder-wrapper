@@ -103,6 +103,45 @@ class BaseObject:
         return f"{self.__class__.__name__}({self.__dict__})"
 
 
+class HDMLString(BaseObject):
+    def __init__(self, client, text: str) -> None:
+        """
+        Initializes a new instance of the HDMLString class.
+
+        Args:
+            client: The DiveHarderApiClient instance used to interact with the API.
+            text: The HDML string.
+        """
+        super().__init__(client)
+        self.text = text
+
+    @property
+    def as_plaintext(self):
+        """
+        Returns the plain text content of the HDML string.
+
+        Returns:
+            str: The plain text content of the HDML string.
+        """
+        return re.sub(r"<.*?>", "", self.text)
+
+    @property
+    def as_md(self):
+        """
+        Returns the Markdown content of the HDML string.
+
+        Returns:
+            str: The Markdown content of the HDML string.
+        """
+        return hdml_to_md(self.text)
+
+    def __str__(self) -> str:
+        return self.as_plaintext
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(text={self.text})"
+
+
 class PlanetStatistics(BaseObject):
     def __init__(
         self,
@@ -397,7 +436,7 @@ class UpdateNews(BaseObject):
         super().__init__(client)
         self.title = title
         self.url = url
-        self.contents = contents
+        self.contents = HDMLString(self.client, contents)
         self.date = datetime.strptime(date, "%d-%b-%Y %H:%M")
 
 
@@ -433,27 +472,7 @@ class Dispatch(BaseObject):
         self.published = datetime.fromtimestamp(self.client.fix_timestamp(published))
         self.type = type
         self.tagIds = tagIds
-        self.message = message
-
-    @property
-    def as_plaintext(self):
-        """
-        Returns the plain text content of the message.
-
-        Returns:
-            str: The plain text content of the message.
-        """
-        return re.sub(r"<.*?>", "", self.message)
-
-    @property
-    def as_markdown(self):
-        """
-        Returns the Markdown version of the message.
-
-        Returns:
-            str: The Markdown version of the message.
-        """
-        return hdml_to_md(self.message)
+        self.message = HDMLString(self.client, message)
 
 
 class MajorOrderReward(BaseObject):
@@ -504,7 +523,7 @@ class MajorOrderSettings(BaseObject):
         Args:
             client: The DiveHarderApiClient instance used to interact with the API.
             type (int): The type of the Major Order.
-            title (str): The title of the Major Order.
+            title (): The title of the Major Order.
             brief (str): The brief description of the Major Order.
             description (str): The full description of the Major Order.
             reward (MajorOrderReward): The reward for completing the Major Order.
@@ -512,9 +531,9 @@ class MajorOrderSettings(BaseObject):
         super().__init__(client)
 
         self.type = type
-        self.title = title
-        self.brief = brief
-        self.description = description
+        self.title = HDMLString(self.client, title)
+        self.brief = HDMLString(self.client, brief)
+        self.description = HDMLString(self.client, description)
         self.reward = reward
 
 
@@ -638,7 +657,7 @@ class MajorOrder(BaseObject):
 
 class Biome(BaseObject):
     """
-    Represents a Biome on DiveHarder.
+    Represents a Biome.
     """
 
     def __init__(self, client, name: str, description: str) -> None:
@@ -671,7 +690,7 @@ class Biome(BaseObject):
 
 class Enviromental(BaseObject):
     """
-    Represents an Environmental on DiveHarder.
+    Represents an Environmental.
     """
 
     def __init__(self, client, name: str, description: str) -> None:
