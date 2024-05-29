@@ -43,6 +43,8 @@ def campaigns():
 
 def planet(id: int = None):
     if id is None:
+        print(f"[bold]Loading all planets...[/bold]")
+        print(f"[red]Warning: This may take a while![/red]")
         with Status("Loading planets...") as status:
             planets = list(api.planets.get_planets())
             table = Table(
@@ -55,10 +57,14 @@ def planet(id: int = None):
                 "Players",
                 title="Planets",
             )
+            dots = 0
             for i in planets:
                 status.update(
-                    f"Loading {i.name}({planets.index(i)/len(planets):.2%})..."
+                    f"{planets.index(i)/len(planets):.2%}{'.'*dots}\nLoading {i.name}"
                 )
+                dots += 1
+                if dots == 4:
+                    dots = 0
                 table.add_row(
                     str(i.id),
                     i.name,
@@ -71,7 +77,7 @@ def planet(id: int = None):
 
         print(table)
         return
-    print(id)
+
     planet = api.planets.get_planet(id)
 
     table = Table(
@@ -101,7 +107,10 @@ cli = {"campaigns": campaigns, "planets": planet}
 
 
 def main() -> None:
-    fire.Fire(cli)
+    try:
+        fire.Fire(cli)
+    except KeyboardInterrupt:
+        exit(0)
 
 
 if __name__ == "__main__":
