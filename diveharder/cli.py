@@ -4,6 +4,8 @@ from rich.table import Table
 from rich import print
 from rich.status import Status
 
+from diveharder.enums import Factions, MajorOrderTypes, ValueTypes
+
 api = DiveHarderApiClient()
 
 
@@ -103,7 +105,46 @@ def planet(id: int = None):
     print(table)
 
 
-cli = {"campaigns": campaigns, "planets": planet}
+def major_order():
+    mo = api.dispatches.get_major_order()
+    if mo is None:
+        print("There is no major order at the moment.")
+        return
+
+    print(f"Title: {mo.settings.title.as_md}")
+    print(f"Description: {mo.settings.description.as_md}")
+    print(f"Brief: {mo.settings.brief.as_md}")
+    print(f"Reward: {mo.settings.reward.amount} {mo.settings.reward.type.name}")
+    print(f"Expires: {mo.expires.strftime('%m-%d-%Y %H:%M')}")
+
+    print("== Tasks ==")
+    tasks = mo.tasks
+
+    for i in tasks:
+
+        if i.type == MajorOrderTypes.CONTROL:
+            completed = ":white_check_mark:" if mo.progress[tasks.index(i)] else ":x:"
+            print(
+                f"[{completed}] Control: {api.planets.get_planet(i.values.get(ValueTypes.PLANET_INDEX)[0]).name}"
+            )
+        if i.type == MajorOrderTypes.DEFENSE:
+            completed = ":white_check_mark:" if mo.progress[tasks.index(i)] else ":x:"
+            print(
+                f"[{completed}] Defend: {api.planets.get_planet(i.values.get(ValueTypes.PLANET_INDEX)[0]).name}"
+            )
+        if i.type == MajorOrderTypes.LIBERATION:
+            completed = ":white_check_mark:" if mo.progress[tasks.index(i)] else ":x:"
+
+            print(
+                f"[{completed}] Liberate: {api.planets.get_planet(i.values.get(ValueTypes.PLANET_INDEX)[0]).name}"
+            )
+        if i.type == MajorOrderTypes.ERADICATE:
+            print(
+                f"Eradicate: {i.values.get(ValueTypes.GOAL)} {Factions.parse(i.values.get(ValueTypes.RACE)).name}"
+            )
+
+
+cli = {"campaigns": campaigns, "planets": planet, "major_order": major_order}
 
 
 def main() -> None:
