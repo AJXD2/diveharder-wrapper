@@ -431,7 +431,7 @@ class WarInfo(BaseObject):
         )
 
 
-class UpdateNews(BaseObject):
+class Update(BaseObject):
     def __init__(self, client, title: str, url: str, contents: str, date: str) -> None:
         super().__init__(client)
         self.title = title
