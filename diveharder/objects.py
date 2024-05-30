@@ -1,8 +1,7 @@
 from datetime import datetime
 from functools import lru_cache
 import re
-from typing import Any, List
-
+from typing import Any, List, Optional
 
 from diveharder.enums import (
     CampaignTypes,
@@ -461,7 +460,7 @@ class Dispatch(BaseObject):
         Args:
             client: The DiveHarderApiClient instance used to interact with the API.
             id (int): The ID of the dispatch message.
-            published (int): The timestamp of when the message was published.
+            published (datetime): The time of when the message was published.
             type (int): The type of the dispatch message.
             tagIds (list): A list of tag IDs associated with the message.
             message (str): The content of the message.
@@ -501,6 +500,9 @@ class MajorOrderReward(BaseObject):
         self.id = id
         self.type = RewardTypes(type)
         self.amount = amount
+
+    def __str__(self) -> str:
+        return f"MajorOrderReward({self.amount} {self.type.name})"
 
 
 class MajorOrderSettings(BaseObject):
@@ -560,6 +562,216 @@ class MajorOrderTask(BaseObject):
         self.type = MajorOrderTypes(type)
         self.values = values
 
+    @property
+    def completed(self) -> bool:
+        """
+        Returns whether the task is completed or not.
+
+        Returns:
+            bool: True if the task is completed, False otherwise.
+        """
+        return self.major_order.progress.is_complete(self)
+
+    @property
+    def planet(self) -> Optional["Planet"]:
+        """
+        Returns the planet associated with the task.
+
+        Returns:
+            Optional[Planet]: The planet associated with the task.
+        """
+        if self.type == MajorOrderTypes.ERADICATE:
+            # print("Eradicate task does not have a planet.")
+            return None
+
+        if self.values.get(ValueTypes.PLANET_INDEX) is not None:
+            # print(f"Planet index: {self.values.get(ValueTypes.PLANET_INDEX)}")
+            return self.client.planets.get_planet(
+                self.values.get(ValueTypes.PLANET_INDEX)
+            )
+
+        return None
+
+    @property
+    def goal(self) -> int:
+        """
+        Returns the goal of the task.
+
+        Returns:
+            int: The goal of the task.
+        """
+        return self.values.get(ValueTypes.GOAL)
+
+    @property
+    def race(self) -> Optional["Factions"]:
+        """
+        Returns the race associated with the task.
+
+        Returns:
+            Optional[Factions]: The race associated with the task.
+        """
+
+        return Factions.parse(self.values.get(ValueTypes.RACE))
+
+    # Dont want to have to do it this way but it works :P
+    @property
+    def major_order(self) -> "MajorOrder":
+        """
+        Returns the Major Order associated with the task.
+
+        Returns:
+            MajorOrder: The Major Order associated with the task.
+        """
+        return self._major_order
+
+    @major_order.setter
+    def major_order(self, value: "MajorOrder"):
+        """
+        Sets the Major Order associated with the task.
+
+        Args:
+            value (MajorOrder): The Major Order associated with the task.
+        """
+        self._major_order = value
+
+
+class MajorOrderProgress(BaseObject):
+    """
+    Represents the progress of a Major Order.
+    """
+
+    def __init__(
+        self,
+        client,
+        progress: List[int],
+        tasks: List["MajorOrderTask"],
+        major_order: "MajorOrder",
+    ):
+        """
+        Initializes a new instance of the MajorOrderProgress class.
+
+        Args:
+            client: The DiveHarderApiClient instance used to interact with the API.
+            progress (List[int]): The progress of the Major Order.
+        """
+        super().__init__(client)
+        self.progress = progress
+        self.tasks = tasks
+        self._major_order = major_order
+
+    @property
+    def major_order(self) -> "MajorOrder":
+        """
+        Returns the Major Order associated with the progress.
+
+        Returns:
+            MajorOrder: The Major Order associated with the progress.
+        """
+        return self._major_order
+
+    def is_complete(self, task: "MajorOrderTask") -> bool:
+        if task.type in (
+            MajorOrderTypes.CONTROL,
+            MajorOrderTypes.DEFENSE,
+            MajorOrderTypes.LIBERATION,
+        ):
+
+            return self.progress[self.tasks.index(task)] == 1
+        elif task.type == MajorOrderTypes.ERADICATE:
+            return self.progress[self.tasks.index(task)] == task.values.get(
+                ValueTypes.GOAL
+            )
+
+        return False
+
+    def get_progress(self, task: "MajorOrderTask") -> int:
+        return self.progress[self.tasks.index(task)]
+
+    @property
+    def completed(self) -> bool:
+        """
+        Returns whether the Major Order is completed or not.
+
+        Returns:
+            bool: True if the Major Order is completed, False otherwise.
+        """
+        return all(i.completed for i in self.tasks)
+
+    @property
+    def total(self) -> int:
+        """
+        Returns the total number of tasks in the Major Order.
+
+        Returns:
+            int: The total number of tasks in the Major Order.
+        """
+
+        return len(self.tasks)
+
+    @property
+    def remaining_tasks(self) -> List["MajorOrderTask"]:
+        """
+        Returns the remaining tasks in the Major Order.
+
+        Returns:
+            List["MajorOrderTask"]: The remaining tasks in the Major Order.
+        """
+        return [i for i in self.tasks if not i.completed]
+
+    @property
+    def remaining(self) -> int:
+        """
+        Returns the remaining number of tasks in the Major Order.
+
+        Returns:
+            int: The remaining number of tasks in the Major Order.
+        """
+        return len(self.remaining_tasks)
+
+    @property
+    def percent(self) -> float:
+        """
+        Returns the percentage of completed tasks in the Major Order.
+
+        Returns:
+            float: The percentage of completed tasks in the Major Order.
+        """
+        return self.current / self.total * 100
+
+    @property
+    def completed_tasks(self) -> List["MajorOrderTask"]:
+        """
+        Returns the completed tasks in the Major Order.
+
+        Returns:
+            List["MajorOrderTask"]: The completed tasks in the Major Order.
+        """
+        completed = []
+        for i in self.tasks:
+            if i.completed:
+                completed.append(i)
+        return completed
+
+    @property
+    def current(self) -> int:
+        """
+        Returns the current number of completed tasks in the Major Order.
+
+        Returns:
+            int: The current number of completed tasks in the Major Order.
+        """
+
+        return len(self.completed_tasks)
+
+    def __getitem__(self, item):
+        try:
+            return self.tasks[item]
+        except ValueError:
+            return None
+
+    def __repr__(self):
+        return f"MajorOrderProgress({self.current}/{self.total})"
+
 
 class MajorOrder(BaseObject):
     """
@@ -570,7 +782,7 @@ class MajorOrder(BaseObject):
         self,
         client,
         id: int,
-        progress: int,
+        progress: List[int],
         expires: int,
         settings: MajorOrderSettings,
         tasks: List[MajorOrderTask],
@@ -589,12 +801,14 @@ class MajorOrder(BaseObject):
         super().__init__(client)
 
         self.id = id
-        self.progress = progress
+        self.progress = MajorOrderProgress(self.client, progress, tasks, self)
         if not isinstance(expires, datetime):
             expires = datetime.fromtimestamp(expires)
         self.expires = expires
         self.settings = settings
         self.tasks = tasks
+        for i in self.tasks:
+            i.major_order = self
 
     @classmethod
     def from_json(cls: "MajorOrder", client, json):
@@ -613,23 +827,25 @@ class MajorOrder(BaseObject):
 
         tasks = []
 
-        for i in json["setting"]["tasks"]:
-
+        for task in json["setting"]["tasks"]:
             vals = {}
-            for j, k in enumerate(i["values"]):
 
+            for j, value in enumerate(task["values"]):
                 try:
-                    val = ValueTypes(i["valueTypes"][j])
+                    val_type = ValueTypes(task["valueTypes"][j])
                 except ValueError:
-                    val = ValueTypes.UNKNOWN
-                if val == ValueTypes.PLANET_INDEX:
+                    val_type = ValueTypes.UNKNOWN
+
+                if val_type == ValueTypes.PLANET_INDEX:
                     if vals.get(ValueTypes.PLANET_INDEX) is None:
                         vals[ValueTypes.PLANET_INDEX] = []
-                    vals[ValueTypes.PLANET_INDEX].append(k)
-                    continue
-                vals[val] = k
+                    vals[ValueTypes.PLANET_INDEX].append(value)
+                else:
+                    vals[val_type] = value
 
-            tasks.append(MajorOrderTask(client, type=i["type"], values=vals))
+            if len(vals.get(ValueTypes.PLANET_INDEX)) == 1:
+                vals[ValueTypes.PLANET_INDEX] = vals[ValueTypes.PLANET_INDEX][0]
+            tasks.append(MajorOrderTask(client, type=task["type"], values=vals))
 
         settings = MajorOrderSettings(
             client,
@@ -653,6 +869,9 @@ class MajorOrder(BaseObject):
             settings=settings,
             tasks=tasks,
         )
+
+    def __str__(self) -> str:
+        return f"MajorOrder(progress={self.progress})"
 
 
 class Biome(BaseObject):
