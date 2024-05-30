@@ -1,8 +1,7 @@
 from datetime import datetime
 from functools import lru_cache
 import re
-from typing import Any, List
-
+from typing import Any, List, Optional
 
 from diveharder.enums import (
     CampaignTypes,
@@ -461,7 +460,7 @@ class Dispatch(BaseObject):
         Args:
             client: The DiveHarderApiClient instance used to interact with the API.
             id (int): The ID of the dispatch message.
-            published (int): The timestamp of when the message was published.
+            published (datetime): The time of when the message was published.
             type (int): The type of the dispatch message.
             tagIds (list): A list of tag IDs associated with the message.
             message (str): The content of the message.
@@ -501,6 +500,9 @@ class MajorOrderReward(BaseObject):
         self.id = id
         self.type = RewardTypes(type)
         self.amount = amount
+
+    def __str__(self) -> str:
+        return f"MajorOrderReward({self.amount} {self.type.name})"
 
 
 class MajorOrderSettings(BaseObject):
@@ -570,6 +572,47 @@ class MajorOrderTask(BaseObject):
         """
         return self.major_order.progress.is_complete(self)
 
+    @property
+    def planet(self) -> Optional["Planet"]:
+        """
+        Returns the planet associated with the task.
+
+        Returns:
+            Optional[Planet]: The planet associated with the task.
+        """
+        if self.type == MajorOrderTypes.ERADICATE:
+            # print("Eradicate task does not have a planet.")
+            return None
+
+        if self.values.get(ValueTypes.PLANET_INDEX) is not None:
+            # print(f"Planet index: {self.values.get(ValueTypes.PLANET_INDEX)}")
+            return self.client.planets.get_planet(
+                self.values.get(ValueTypes.PLANET_INDEX)
+            )
+
+        return None
+
+    @property
+    def goal(self) -> int:
+        """
+        Returns the goal of the task.
+
+        Returns:
+            int: The goal of the task.
+        """
+        return self.values.get(ValueTypes.GOAL)
+
+    @property
+    def race(self) -> Optional["Factions"]:
+        """
+        Returns the race associated with the task.
+
+        Returns:
+            Optional[Factions]: The race associated with the task.
+        """
+
+        return Factions.parse(self.values.get(ValueTypes.RACE))
+
     # Dont want to have to do it this way but it works :P
     @property
     def major_order(self) -> "MajorOrder":
@@ -638,6 +681,11 @@ class MajorOrderProgress(BaseObject):
             return self.progress[self.tasks.index(task)] == task.values.get(
                 ValueTypes.GOAL
             )
+
+        return False
+
+    def get_progress(self, task: "MajorOrderTask") -> int:
+        return self.progress[self.tasks.index(task)]
 
     @property
     def completed(self) -> bool:
@@ -795,6 +843,8 @@ class MajorOrder(BaseObject):
                 else:
                     vals[val_type] = value
 
+            if len(vals.get(ValueTypes.PLANET_INDEX)) == 1:
+                vals[ValueTypes.PLANET_INDEX] = vals[ValueTypes.PLANET_INDEX][0]
             tasks.append(MajorOrderTask(client, type=task["type"], values=vals))
 
         settings = MajorOrderSettings(
