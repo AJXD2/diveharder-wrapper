@@ -568,17 +568,7 @@ class MajorOrderTask(BaseObject):
         Returns:
             bool: True if the task is completed, False otherwise.
         """
-        # print(self.major_order)
-        if self.type in (
-            MajorOrderTypes.CONTROL,
-            MajorOrderTypes.DEFENSE,
-            MajorOrderTypes.LIBERATION,
-        ):
-            return self.major_order.progress[self.major_order.tasks.index(self)] == 1
-        elif self.type == MajorOrderTypes.ERADICATE:
-            return self.major_order.progress[
-                self.major_order.tasks.index(self)
-            ] == self.values.get(ValueTypes.GOAL)
+        return self.major_order.progress.is_complete(self)
 
     # Dont want to have to do it this way but it works :P
     @property
@@ -622,7 +612,6 @@ class MajorOrderProgress(BaseObject):
             progress (List[int]): The progress of the Major Order.
         """
         super().__init__(client)
-
         self.progress = progress
         self.tasks = tasks
         self._major_order = major_order
@@ -636,6 +625,19 @@ class MajorOrderProgress(BaseObject):
             MajorOrder: The Major Order associated with the progress.
         """
         return self._major_order
+
+    def is_complete(self, task: "MajorOrderTask") -> bool:
+        if task.type in (
+            MajorOrderTypes.CONTROL,
+            MajorOrderTypes.DEFENSE,
+            MajorOrderTypes.LIBERATION,
+        ):
+
+            return self.progress[self.tasks.index(task)] == 1
+        elif task.type == MajorOrderTypes.ERADICATE:
+            return self.progress[self.tasks.index(task)] == task.values.get(
+                ValueTypes.GOAL
+            )
 
     @property
     def completed(self) -> bool:
@@ -659,6 +661,50 @@ class MajorOrderProgress(BaseObject):
         return len(self.tasks)
 
     @property
+    def remaining_tasks(self) -> List["MajorOrderTask"]:
+        """
+        Returns the remaining tasks in the Major Order.
+
+        Returns:
+            List["MajorOrderTask"]: The remaining tasks in the Major Order.
+        """
+        return [i for i in self.tasks if not i.completed]
+
+    @property
+    def remaining(self) -> int:
+        """
+        Returns the remaining number of tasks in the Major Order.
+
+        Returns:
+            int: The remaining number of tasks in the Major Order.
+        """
+        return len(self.remaining_tasks)
+
+    @property
+    def percent(self) -> float:
+        """
+        Returns the percentage of completed tasks in the Major Order.
+
+        Returns:
+            float: The percentage of completed tasks in the Major Order.
+        """
+        return self.current / self.total * 100
+
+    @property
+    def completed_tasks(self) -> List["MajorOrderTask"]:
+        """
+        Returns the completed tasks in the Major Order.
+
+        Returns:
+            List["MajorOrderTask"]: The completed tasks in the Major Order.
+        """
+        completed = []
+        for i in self.tasks:
+            if i.completed:
+                completed.append(i)
+        return completed
+
+    @property
     def current(self) -> int:
         """
         Returns the current number of completed tasks in the Major Order.
@@ -666,7 +712,17 @@ class MajorOrderProgress(BaseObject):
         Returns:
             int: The current number of completed tasks in the Major Order.
         """
-        return sum(i.completed for i in self.tasks)
+
+        return len(self.completed_tasks)
+
+    def __getitem__(self, item):
+        try:
+            return self.tasks[item]
+        except ValueError:
+            return None
+
+    def __repr__(self):
+        return f"MajorOrderProgress({self.current}/{self.total})"
 
 
 class MajorOrder(BaseObject):
@@ -678,7 +734,7 @@ class MajorOrder(BaseObject):
         self,
         client,
         id: int,
-        progress: int,
+        progress: List[int],
         expires: int,
         settings: MajorOrderSettings,
         tasks: List[MajorOrderTask],
