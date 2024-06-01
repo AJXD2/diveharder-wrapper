@@ -1,19 +1,19 @@
 from functools import lru_cache
 from diveharder.api.base import ApiBase
-from diveharder.objects import Planet, PlanetStatus
+from diveharder.objects import Planet, PlanetStatus, Status
 
 
 class StatusAPI(ApiBase):
 
     @lru_cache(maxsize=1)
-    def get_status(self) -> dict:
+    def get_status(self) -> Status:
         """
         Retrieves the status of the API from the API and returns it as a `dict` object.
 
         Returns:
             dict: The status retrieved from the API.
         """
-        return self._api_request("status")
+        return Status.from_json(self.client, self._api_request("status"))
 
     def get_planet_status(self, planet: Planet) -> PlanetStatus:
         """

@@ -361,8 +361,8 @@ class WarInfo(BaseObject):
         self,
         client,
         war_id: int,
-        start_date: int,
-        end_date: int,
+        start_date: datetime,
+        end_date: datetime,
         layout_version: int,
         minimum_client_version: str,
         planet_infos: List[PlanetInfo],
@@ -431,6 +431,16 @@ class WarInfo(BaseObject):
 
 
 class Update(BaseObject):
+    """
+    Represents a steam update.
+
+    Attributes:
+        title (str): The title of the update.
+        url (str): The URL of the update.
+        contents (HDMLString): The contents of the update.
+        date (datetime): The date and time the update was published.
+    """
+
     def __init__(self, client, title: str, url: str, contents: str, date: str) -> None:
         super().__init__(client)
         self.title = title
@@ -441,18 +451,24 @@ class Update(BaseObject):
 
 class Dispatch(BaseObject):
     """
-    Represents a dispatch message from the DiveHarder API.
+    Represents a dispatch (news feed).
 
     Attributes:
         id (int): The ID of the dispatch message.
         published (datetime): The date and time the message was published.
         type (int): The type of the dispatch message.
-        tagIds (list): A list of tag IDs associated with the message.
+        tagIds (list[int]): A list of tag IDs associated with the message.
         message (str): The content of the message.
     """
 
     def __init__(
-        self, client, id: int, published: int, type: int, tagIds: list, message: str
+        self,
+        client,
+        id: int,
+        published: int,
+        type: int,
+        tagIds: list[int],
+        message: str,
     ):
         """
         Initializes a new instance of the Dispatch class.
@@ -525,7 +541,7 @@ class MajorOrderSettings(BaseObject):
         Args:
             client: The DiveHarderApiClient instance used to interact with the API.
             type (int): The type of the Major Order.
-            title (): The title of the Major Order.
+            title (str): The title of the Major Order.
             brief (str): The brief description of the Major Order.
             description (str): The full description of the Major Order.
             reward (MajorOrderReward): The reward for completing the Major Order.
@@ -644,7 +660,7 @@ class MajorOrderProgress(BaseObject):
         self,
         client,
         progress: List[int],
-        tasks: List["MajorOrderTask"],
+        tasks: List[MajorOrderTask],
         major_order: "MajorOrder",
     ):
         """
@@ -802,9 +818,7 @@ class MajorOrder(BaseObject):
 
         self.id = id
         self.progress = MajorOrderProgress(self.client, progress, tasks, self)
-        if not isinstance(expires, datetime):
-            expires = datetime.fromtimestamp(expires)
-        self.expires = expires
+        self.expires = self.client.fix_timestamp(expires, True)
         self.settings = settings
         self.tasks = tasks
         for i in self.tasks:
@@ -865,7 +879,7 @@ class MajorOrder(BaseObject):
             client=client,
             id=json["id32"],
             progress=json["progress"],
-            expires=datetime.fromtimestamp(client.current_time + json["expiresIn"]),
+            expires=json["expiresIn"],
             settings=settings,
             tasks=tasks,
         )
@@ -938,6 +952,64 @@ class Enviromental(BaseObject):
         if not isinstance(value, Biome):
             return False
         return all(self.name == value.name, self.description == value.description)
+
+
+class JointOperation(BaseObject):
+    def __init__(
+        self,
+        client,
+    ) -> None:
+        super().__init__(client)
+
+
+class Status(BaseObject):
+    def __init__(
+        self,
+        client,
+        war_id: int,
+        time: int,
+        impact_multiplier: float,
+        story_beat_id: int,
+        community_targets: list,
+        joint_operations: list,
+        planet_events: list,
+        planet_active_effects: list,
+        active_election_policy_effects: list,
+        global_events: list,
+        war_results: list,
+        layout_version: int,
+    ) -> None:
+        super().__init__(client)
+        self.war_id = war_id
+        self.time = time
+        self.impact_multiplier = impact_multiplier
+        self.story_beat_id = story_beat_id
+        self.community_targets = community_targets
+        self.joint_operations = joint_operations
+        self.planet_events = planet_events
+        self.planet_active_effects = planet_active_effects
+        self.active_election_policy_effects = active_election_policy_effects
+        self.global_events = global_events
+        self.war_results = war_results
+        self.layout_version = layout_version
+
+    @classmethod
+    def from_json(cls, client, json):
+        return cls(
+            client=client,
+            war_id=json["warId"],
+            time=json["time"],
+            impact_multiplier=json["impactMultiplier"],
+            story_beat_id=json["storyBeatId32"],
+            community_targets=json["communityTargets"],
+            joint_operations=json["jointOperations"],
+            planet_events=json["planetEvents"],
+            planet_active_effects=json["planetActiveEffects"],
+            active_election_policy_effects=json["activeElectionPolicyEffects"],
+            global_events=json["globalEvents"],
+            war_results=json["superEarthWarResults"],
+            layout_version=json["layoutVersion"],
+        )
 
 
 class PlanetStatus(BaseObject):

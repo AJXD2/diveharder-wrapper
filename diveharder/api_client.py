@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import lru_cache
 import logging
 import requests
@@ -87,16 +88,18 @@ class DiveHarderApiClient:
         response.raise_for_status()
         return response.json()
 
-    @property
-    def current_time(self) -> float:
-        data = self.all
-        start_date = data.get("war_info", {}).get("startDate", 0)
-        now = data.get("status", {}).get("time", 0)
-        return start_date + now
-
-    def fix_timestamp(self, timestamp: float) -> float:
+    def fix_timestamp(self, timestamp: float, as_datetime: bool = False) -> float:
         """Fixes the provided timestamp based on the current time."""
-        return self.current_time + timestamp
+
+        fixed_timestamp = (
+            self.status.get_status().time
+            + self.war_info.get_war_info().start_date.timestamp()
+            + timestamp
+        )
+
+        return (
+            datetime.fromtimestamp(fixed_timestamp) if as_datetime else fixed_timestamp
+        )
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(url={self._url})"
