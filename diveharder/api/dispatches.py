@@ -14,11 +14,10 @@ class Dispatches(ApiBase):
         """
         Get a list of all dispatches from the news feed.
 
-        Returns:
-            List[Dispatch]: List of Dispatch objects.
+        Yields:
+            Dispatch: The next dispatch from the news feed.
         """
-        # Send a GET request to the news feed endpoint and parse the JSON response
-        # into a list of Dispatch objects.
+
         for i in self._api_request("news_feed"):
 
             yield Dispatch.from_json(self._client, i)
@@ -33,7 +32,7 @@ class Dispatches(ApiBase):
         Returns:
             Optional[Dispatch]: Dispatch object if found, None otherwise.
         """
-        # Get all dispatches from the news feed and search for the one with the given ID.
+
         dispatches = self.get_dispatches()
         for dispatch in dispatches:
             if dispatch["id"] == id:
@@ -48,7 +47,7 @@ class Dispatches(ApiBase):
         Returns:
             Dispatch: The most recent dispatch.
         """
-        # Get all dispatches from the news feed and return the last one.
+
         dispatches = self.get_dispatches()
         return list(dispatches)[-1]
 
@@ -62,7 +61,7 @@ class Dispatches(ApiBase):
         Returns:
             List[Dispatch]: The most recent dispatches.
         """
-        # Get all dispatches from the news feed and return the last count number of them.
+
         dispatches = list(self.get_dispatches())
         return dispatches[-count:]
 

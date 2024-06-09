@@ -5,10 +5,11 @@ from diveharder.objects import Update
 
 
 class UpdatesAPI(ApiBase):
+    """API class for retrieving updates from the DiveHarder API."""
 
     def get_updates(self) -> Generator[Update, None, None]:
         """
-        Retrieves updates from the API and returns them as a generator of Update objects.
+        Retrieves updates from the DiveHarder API and returns them as a generator of Update objects.
 
         Returns:
             Generator[Update]: A generator that yields Update objects.
@@ -28,7 +29,6 @@ class UpdatesAPI(ApiBase):
         Returns:
             Update or None: The update object with the given date, or None if no update is found.
         """
-
         date = datetime.strptime(date, "%d-%b-%Y %H:%M")
 
         for i in self.get_updates():
@@ -46,7 +46,6 @@ class UpdatesAPI(ApiBase):
         Returns:
             Update or None: The update object with the given URL, or None if no update is found.
         """
-
         for i in self.get_updates():
             if i.url == url:
                 return i
@@ -62,7 +61,6 @@ class UpdatesAPI(ApiBase):
         Returns:
             Update or None: The update object with the given title, or None if no update is found.
         """
-
         for i in self.get_updates():
             if i.title == title:
                 return i
