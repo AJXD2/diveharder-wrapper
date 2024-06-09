@@ -137,9 +137,6 @@ class HDMLString(BaseObject):
     def __str__(self) -> str:
         return self.as_plaintext
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(text={self.text})"
-
 
 class PlanetStatistics(BaseObject):
     def __init__(
@@ -294,6 +291,10 @@ class GlobalStatistics(BaseObject):
 
 
 class PlanetInfo(BaseObject):
+    """
+    Represents a planet's information.
+    """
+
     def __init__(
         self,
         client,
@@ -306,6 +307,23 @@ class PlanetInfo(BaseObject):
         disabled: bool,
         initial_owner: int,
     ) -> None:
+        """
+        Initializes a new instance of the PlanetInfo class.
+
+        Args:
+            client: The DiveHarderApiClient instance used to interact with the API.
+            index (int): The index of the planet.
+            settings_hash (int): The settings hash of the planet.
+            position (dict): The position of the planet.
+            waypoints (List[int]): The waypoints of the planet.
+            sector (int): The sector of the planet.
+            max_health (int): The maximum health of the planet.
+            disabled (bool): Whether the planet is disabled.
+            initial_owner (int): The initial owner of the planet.
+
+        Returns:
+            None
+        """
         super().__init__(client)
 
         self._index = index
@@ -319,10 +337,26 @@ class PlanetInfo(BaseObject):
 
     @property
     def planet(self):
+        """
+        Returns the planet associated with this planet info.
+
+        Returns:
+            Planet: The planet associated with this planet info.
+        """
         return self.client.planets[self._index]
 
     @classmethod
     def from_json(cls, client, json):
+        """
+        Creates a new PlanetInfo instance from the given JSON data.
+
+        Args:
+            client: The DiveHarderApiClient instance used to interact with the API.
+            json (dict[str, Any]): The JSON data representing the planet info.
+
+        Returns:
+            PlanetInfo: The created PlanetInfo instance.
+        """
         return cls(
             client,
             index=json["index"],
@@ -337,7 +371,23 @@ class PlanetInfo(BaseObject):
 
 
 class HomeWorldInfo(BaseObject):
+    """
+    Represents information about a home world.
+
+    Attributes:
+        race (Factions): The race of the home world.
+        planets (List[Planet]): The planets associated with the home world.
+    """
+
     def __init__(self, client, race: int, planets: List[int]) -> None:
+        """
+        Initializes a HomeWorldInfo object with the given parameters.
+
+        Args:
+            client: The client object.
+            race (int): The race of the home world.
+            planets (List[int]): The indices of the planets associated with the home world.
+        """
         super().__init__(client)
 
         self.race = Factions.parse(race)
@@ -345,10 +395,26 @@ class HomeWorldInfo(BaseObject):
 
     @property
     def planets(self):
+        """
+        Returns the planets associated with the home world.
+
+        Returns:
+            List[Planet]: The planets associated with the home world.
+        """
         return [self.client.planets[id] for id in self._planet_ids]
 
     @classmethod
     def from_json(cls, client, json):
+        """
+        Creates a new HomeWorldInfo instance from the given JSON data.
+
+        Args:
+            client: The DiveHarderApiClient instance used to interact with the API.
+            json (dict[str, Any]): The JSON data representing the home world info.
+
+        Returns:
+            HomeWorldInfo: The created HomeWorldInfo instance.
+        """
         return cls(
             client,
             race=json["race"],
@@ -357,12 +423,28 @@ class HomeWorldInfo(BaseObject):
 
 
 class WarInfo(BaseObject):
+    """
+    Represents information about a war.
+
+    Args:
+        client: The client object.
+        war_id (int): The ID of the war.
+        start_date (datetime): The start date of the war.
+        end_date (datetime): The end date of the war.
+        layout_version (int): The version of the layout.
+        minimum_client_version (str): The minimum client version required.
+        planet_infos (List[PlanetInfo]): A list of PlanetInfo objects.
+        home_worlds (List[HomeWorldInfo]): A list of HomeWorldInfo objects.
+        capital_infos (List[Any]): A list of capital information.
+        planet_permanent_effects (List[Any]): A list of permanent effects on planets.
+    """
+
     def __init__(
         self,
         client,
         war_id: int,
-        start_date: int,
-        end_date: int,
+        start_date: datetime,
+        end_date: datetime,
         layout_version: int,
         minimum_client_version: str,
         planet_infos: List[PlanetInfo],
@@ -370,24 +452,6 @@ class WarInfo(BaseObject):
         capital_infos: List[Any],
         planet_permanent_effects: List[Any],
     ) -> None:
-        """
-        Initializes a WarInfo object with the given parameters.
-
-        Args:
-            client: The client object.
-            war_id (int): The ID of the war.
-            start_date (int): The start date of the war.
-            end_date (int): The end date of the war.
-            layout_version (int): The version of the layout.
-            minimum_client_version (str): The minimum client version required.
-            planet_infos (List[PlanetInfo]): A list of PlanetInfo objects.
-            home_worlds (List[HomeWorldInfo]): A list of HomeWorldInfo objects.
-            capital_infos (List[Any]): A list of capital information.
-            planet_permanent_effects (List[Any]): A list of permanent effects on planets.
-
-        Returns:
-            None
-        """
 
         super().__init__(client)
         self.war_id = war_id
@@ -402,14 +466,43 @@ class WarInfo(BaseObject):
 
     @property
     def start_date(self) -> datetime:
+        """
+        Gets the start date of the war.
+
+        Returns:
+            datetime: The start date of the war.
+        """
         return datetime.fromtimestamp(self._start_date)
 
     @property
     def end_date(self) -> datetime:
+        """
+        Gets the end date of the war.
+
+        Returns:
+            datetime: The end date of the war.
+        """
         return datetime.fromtimestamp(self._end_date)
 
     @classmethod
     def from_json(cls, client, json):
+        """
+        Creates a new WarInfo instance from the given JSON data.
+
+        Args:
+            client: The DiveHarderApiClient instance used to interact with the API.
+            json (dict[str, Any]): The JSON data representing the war info.
+
+        Returns:
+            WarInfo: The created WarInfo instance.
+        """
+        planets_info = [
+            PlanetInfo.from_json(client, info) for info in json["planetInfos"]
+        ]
+        home_worlds_info = [
+            HomeWorldInfo.from_json(client, info) for info in json["homeWorlds"]
+        ]
+
         return cls(
             client,
             json["warId"],
@@ -417,20 +510,24 @@ class WarInfo(BaseObject):
             json["endDate"],
             json["layoutVersion"],
             json["minimumClientVersion"],
-            [
-                PlanetInfo.from_json(client, planet_info)
-                for planet_info in json["planetInfos"]
-            ],
-            [
-                HomeWorldInfo.from_json(client, home_world)
-                for home_world in json["homeWorlds"]
-            ],
+            planets_info,
+            home_worlds_info,
             json["capitalInfos"],
             json["planetPermanentEffects"],
         )
 
 
 class Update(BaseObject):
+    """
+    Represents a steam update.
+
+    Attributes:
+        title (str): The title of the update.
+        url (str): The URL of the update.
+        contents (HDMLString): The contents of the update.
+        date (datetime): The date and time the update was published.
+    """
+
     def __init__(self, client, title: str, url: str, contents: str, date: str) -> None:
         super().__init__(client)
         self.title = title
@@ -441,18 +538,24 @@ class Update(BaseObject):
 
 class Dispatch(BaseObject):
     """
-    Represents a dispatch message from the DiveHarder API.
+    Represents a dispatch (news feed).
 
     Attributes:
         id (int): The ID of the dispatch message.
         published (datetime): The date and time the message was published.
         type (int): The type of the dispatch message.
-        tagIds (list): A list of tag IDs associated with the message.
+        tagIds (list[int]): A list of tag IDs associated with the message.
         message (str): The content of the message.
     """
 
     def __init__(
-        self, client, id: int, published: int, type: int, tagIds: list, message: str
+        self,
+        client,
+        id: int,
+        published: int,
+        type: int,
+        tagIds: list[int],
+        message: str,
     ):
         """
         Initializes a new instance of the Dispatch class.
@@ -525,7 +628,7 @@ class MajorOrderSettings(BaseObject):
         Args:
             client: The DiveHarderApiClient instance used to interact with the API.
             type (int): The type of the Major Order.
-            title (): The title of the Major Order.
+            title (str): The title of the Major Order.
             brief (str): The brief description of the Major Order.
             description (str): The full description of the Major Order.
             reward (MajorOrderReward): The reward for completing the Major Order.
@@ -581,11 +684,9 @@ class MajorOrderTask(BaseObject):
             Optional[Planet]: The planet associated with the task.
         """
         if self.type == MajorOrderTypes.ERADICATE:
-            # print("Eradicate task does not have a planet.")
             return None
 
         if self.values.get(ValueTypes.PLANET_INDEX) is not None:
-            # print(f"Planet index: {self.values.get(ValueTypes.PLANET_INDEX)}")
             return self.client.planets.get_planet(
                 self.values.get(ValueTypes.PLANET_INDEX)
             )
@@ -644,7 +745,7 @@ class MajorOrderProgress(BaseObject):
         self,
         client,
         progress: List[int],
-        tasks: List["MajorOrderTask"],
+        tasks: List[MajorOrderTask],
         major_order: "MajorOrder",
     ):
         """
@@ -769,9 +870,6 @@ class MajorOrderProgress(BaseObject):
         except ValueError:
             return None
 
-    def __repr__(self):
-        return f"MajorOrderProgress({self.current}/{self.total})"
-
 
 class MajorOrder(BaseObject):
     """
@@ -802,9 +900,7 @@ class MajorOrder(BaseObject):
 
         self.id = id
         self.progress = MajorOrderProgress(self.client, progress, tasks, self)
-        if not isinstance(expires, datetime):
-            expires = datetime.fromtimestamp(expires)
-        self.expires = expires
+        self.expires = self.client.fix_timestamp(expires, True)
         self.settings = settings
         self.tasks = tasks
         for i in self.tasks:
@@ -865,13 +961,10 @@ class MajorOrder(BaseObject):
             client=client,
             id=json["id32"],
             progress=json["progress"],
-            expires=datetime.fromtimestamp(client.current_time + json["expiresIn"]),
+            expires=json["expiresIn"],
             settings=settings,
             tasks=tasks,
         )
-
-    def __str__(self) -> str:
-        return f"MajorOrder(progress={self.progress})"
 
 
 class Biome(BaseObject):
@@ -891,6 +984,12 @@ class Biome(BaseObject):
         super().__init__(client)
         self.name = name
         self.description = description
+
+    @classmethod
+    def from_json(cls, client, json):
+        if not isinstance(json, dict):
+            return None
+        return cls(client, name=json["name"], description=json["description"])
 
     def __eq__(self, value: object) -> bool:
         """
@@ -925,6 +1024,12 @@ class Enviromental(BaseObject):
         self.name = name
         self.description = description
 
+    @classmethod
+    def from_json(cls, client, json):
+        if not isinstance(json, dict):
+            return None
+        return cls(client, name=json["name"], description=json["description"])
+
     def __eq__(self, value: object) -> bool:
         """
         Determines if the current instance is equal to the given value.
@@ -940,6 +1045,75 @@ class Enviromental(BaseObject):
         return all(self.name == value.name, self.description == value.description)
 
 
+class JointOperation(BaseObject):
+    def __init__(
+        self,
+        client,
+    ) -> None:
+        super().__init__(client)
+
+
+class Status(BaseObject):
+    def __init__(
+        self,
+        client,
+        planet_status: list[dict],
+        war_id: int,
+        time: int,
+        impact_multiplier: float,
+        story_beat_id: int,
+        community_targets: list,
+        joint_operations: list,
+        planet_events: list,
+        planet_active_effects: list,
+        active_election_policy_effects: list,
+        global_events: list,
+        war_results: list,
+        layout_version: int,
+    ) -> None:
+        super().__init__(client)
+        self._planet_status = planet_status
+        self.war_id = war_id
+        self.time = time
+        self.impact_multiplier = impact_multiplier
+        self.story_beat_id = story_beat_id
+        self.community_targets = community_targets
+        self.joint_operations = joint_operations
+        self.planet_events = planet_events
+        self.planet_active_effects = planet_active_effects
+        self.active_election_policy_effects = active_election_policy_effects
+        self.global_events = global_events
+        self.war_results = war_results
+        self.layout_version = layout_version
+
+    @property
+    def planet_status(self) -> list["PlanetStatus"]:
+        if not isinstance(self._planet_status[0], PlanetStatus):
+            self._planet_status = [
+                PlanetStatus.from_json(self.client, i) for i in self._planet_status
+            ]
+        return self._planet_status
+
+    @classmethod
+    def from_json(cls, client, json):
+        return cls(
+            client=client,
+            planet_status=json["planetStatus"],
+            war_id=json["warId"],
+            time=json["time"],
+            impact_multiplier=json["impactMultiplier"],
+            story_beat_id=json["storyBeatId32"],
+            community_targets=json["communityTargets"],
+            joint_operations=json["jointOperations"],
+            planet_events=json["planetEvents"],
+            planet_active_effects=json["planetActiveEffects"],
+            active_election_policy_effects=json["activeElectionPolicyEffects"],
+            global_events=json["globalEvents"],
+            war_results=json["superEarthWarResults"],
+            layout_version=json["layoutVersion"],
+        )
+
+
 class PlanetStatus(BaseObject):
     """
     Represents the status of a Planet on DiveHarder.
@@ -948,7 +1122,7 @@ class PlanetStatus(BaseObject):
     def __init__(
         self,
         client,
-        planet: "Planet",
+        planet: int,
         health: int,
         regen: float,
         players: int,
@@ -965,20 +1139,33 @@ class PlanetStatus(BaseObject):
             players: The number of players on the planet.
         """
         super().__init__(client)
-        self.planet = planet
+        self._planet = planet
         self.health = health
         self.regen = regen
         self.players = players
         self.faction = faction
 
+    @property
+    def planet(self):
+        """
+        Returns the planet the campaign is on.
+
+        Returns:
+            Planet: The planet the campaign is on.
+        """
+        print(f"Getting planet: {self._planet}")
+        if not isinstance(self._planet, Planet):
+            self._planet = self.client.planets.get_planet(self._planet)
+            return self._planet
+        return self._planet
+
     @classmethod
-    def from_json(cls, client, planet, json):
+    def from_json(cls, client, json):
         """
         Creates a new PlanetStatus instance from the given JSON data.
 
         Args:
             client: The DiveHarderApiClient instance used to interact with the API.
-            planet: The Planet instance.
             json: The JSON data representing the PlanetStatus.
 
         Returns:
@@ -987,7 +1174,7 @@ class PlanetStatus(BaseObject):
 
         return cls(
             client=client,
-            planet=planet,
+            planet=json["index"],
             health=json["health"],
             regen=json["regenPerSecond"],
             players=json["players"],
@@ -1029,7 +1216,7 @@ class Planet(BaseObject):
         """
         super().__init__(client)
 
-        self.id = id
+        self.id = int(id)
         self.name = name
         self.sector = sector
         self.biome = biome
@@ -1066,8 +1253,17 @@ class Planet(BaseObject):
 
         return self._cache["campaign"]
 
+    @property
+    def is_part_of_major_order(self):
+        mo = self.client.dispatches.get_major_order()
+        for i in mo.tasks:
+            if i.planet == self:
+                return True
+
+        return False
+
     @classmethod
-    def from_json(cls, client, id: int, json: dict[str, Any]):
+    def from_json(cls, client, json: dict[str, Any]):
         """
         Creates a new Planet instance from the given JSON data.
 
@@ -1080,13 +1276,9 @@ class Planet(BaseObject):
             Planet: The created Planet instance.
         """
 
-        from diveharder import DiveHarderApiClient
-
-        client: DiveHarderApiClient = client
-
         return cls(
             client=client,
-            id=int(id),
+            id=json["id"],
             name=json["name"],
             sector=json["sector"],
             biome=Biome.from_json(client, json["biome"]),
@@ -1094,6 +1286,10 @@ class Planet(BaseObject):
                 Enviromental.from_json(client, i) for i in json["environmentals"]
             ],
         )
+
+    def __eq__(self, value: object) -> bool:
+        # We need to offset the id by 1 because the /v1/planets endpoint returns 0 as the first planet while the real starting index is 1
+        return isinstance(value, Planet) and self.id + 1 == value.id
 
 
 class Campaign(BaseObject):
@@ -1111,7 +1307,7 @@ class Campaign(BaseObject):
         self,
         client,
         id: int,
-        planetid: int,
+        planet: int,
         type: CampaignTypes | int,
         count: int,
     ) -> None:
@@ -1126,17 +1322,12 @@ class Campaign(BaseObject):
             count (int): The count of the campaign.
         """
         super().__init__(client)
-        self.id = id
-
-        self._planetid = planetid
-        if isinstance(type, int):
-            type = CampaignTypes.parse(type)
-        self._planet = None
-        self.type: CampaignTypes = type
+        self.id = int(id)
+        self._planet = planet
+        self.type = type
         self.count = count
 
     @property
-    @lru_cache(maxsize=1)
     def planet(self):
         """
         Returns the planet the campaign is on.
@@ -1144,10 +1335,10 @@ class Campaign(BaseObject):
         Returns:
             Planet: The planet the campaign is on.
         """
-        if not self._planet:
-            self._planet = self.client.planets.get_planet(self._planetid)
-            return self._planet
 
+        if not isinstance(self._planet, Planet):
+            self._planet = self.client.planets.get_planet(self._planet)
+            return self._planet
         return self._planet
 
     @classmethod
@@ -1163,11 +1354,10 @@ class Campaign(BaseObject):
             Campaign: The created Campaign instance.
         """
 
-        campaign = cls(
+        return cls(
             client=client,
             id=json["id"],
-            planetid=json["planetIndex"],
-            type=CampaignTypes(json["type"]),
+            planet=json["planetIndex"],
+            type=CampaignTypes.parse(json["type"]),
             count=json["count"],
         )
-        return campaign

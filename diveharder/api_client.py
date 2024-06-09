@@ -1,5 +1,7 @@
+from datetime import datetime
 from functools import lru_cache
 import logging
+from time import time
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
@@ -81,22 +83,24 @@ class DiveHarderApiClient:
         return Campaigns(self, self._session, self._url, self._user_agent)
 
     @property
+    def game_time(self) -> float:
+        return self.status.get_status().time
+
+    @property
     @lru_cache(maxsize=1)
     def all(self) -> dict:
         response = self._session.get(url_join(self._url, "v1", "all"))
         response.raise_for_status()
         return response.json()
 
-    @property
-    def current_time(self) -> float:
-        data = self.all
-        start_date = data.get("war_info", {}).get("startDate", 0)
-        now = data.get("status", {}).get("time", 0)
-        return start_date + now
-
-    def fix_timestamp(self, timestamp: float) -> float:
+    def fix_timestamp(self, timestamp: float, as_datetime: bool = False) -> float:
         """Fixes the provided timestamp based on the current time."""
-        return self.current_time + timestamp
+
+        fixed_timestamp = (time() - self.game_time) + (timestamp + self.game_time)
+
+        return (
+            datetime.fromtimestamp(fixed_timestamp) if as_datetime else fixed_timestamp
+        )
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(url={self._url})"
