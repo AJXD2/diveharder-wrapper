@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Generator, List, Optional
+from typing import Generator, Optional
 from diveharder.api.base import ApiBase
 from diveharder.objects import Campaign, Planet
 

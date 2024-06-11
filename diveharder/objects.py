@@ -1,11 +1,10 @@
 from datetime import datetime
-from functools import lru_cache
 import re
 from typing import Any, List, Optional
-
+import requests
 from diveharder.enums import (
     CampaignTypes,
-    Factions,
+    Faction,
     MajorOrderTypes,
     RewardTypes,
     ValueTypes,
@@ -206,7 +205,6 @@ class PlanetStatistics(BaseObject):
 
 
 class GalaxyStatistics(BaseObject):
-
     def __init__(
         self,
         client,
@@ -333,7 +331,7 @@ class PlanetInfo(BaseObject):
         self.sector = sector
         self.max_health = max_health
         self.disabled = disabled
-        self.initial_owner = initial_owner
+        self.initial_owner = Faction.parse(initial_owner)
 
     @property
     def planet(self):
@@ -375,7 +373,7 @@ class HomeWorldInfo(BaseObject):
     Represents information about a home world.
 
     Attributes:
-        race (Factions): The race of the home world.
+        race (Faction): The race of the home world.
         planets (List[Planet]): The planets associated with the home world.
     """
 
@@ -390,7 +388,7 @@ class HomeWorldInfo(BaseObject):
         """
         super().__init__(client)
 
-        self.race = Factions.parse(race)
+        self.race = Faction.parse(race)
         self._planet_ids = planets
 
     @property
@@ -452,7 +450,6 @@ class WarInfo(BaseObject):
         capital_infos: List[Any],
         planet_permanent_effects: List[Any],
     ) -> None:
-
         super().__init__(client)
         self.war_id = war_id
         self._start_date = start_date
@@ -704,15 +701,15 @@ class MajorOrderTask(BaseObject):
         return self.values.get(ValueTypes.GOAL)
 
     @property
-    def race(self) -> Optional["Factions"]:
+    def race(self) -> Optional["Faction"]:
         """
         Returns the race associated with the task.
 
         Returns:
-            Optional[Factions]: The race associated with the task.
+            Optional[Faction]: The race associated with the task.
         """
 
-        return Factions.parse(self.values.get(ValueTypes.RACE))
+        return Faction.parse(self.values.get(ValueTypes.RACE))
 
     # Dont want to have to do it this way but it works :P
     @property
@@ -776,7 +773,6 @@ class MajorOrderProgress(BaseObject):
             MajorOrderTypes.DEFENSE,
             MajorOrderTypes.LIBERATION,
         ):
-
             return self.progress[self.tasks.index(task)] == 1
         elif task.type == MajorOrderTypes.ERADICATE:
             return self.progress[self.tasks.index(task)] == task.values.get(
@@ -1126,7 +1122,7 @@ class PlanetStatus(BaseObject):
         health: int,
         regen: float,
         players: int,
-        faction: Factions,
+        faction: Faction,
     ) -> None:
         """
         Initializes a new instance of the PlanetStatus class.
@@ -1178,7 +1174,7 @@ class PlanetStatus(BaseObject):
             health=json["health"],
             regen=json["regenPerSecond"],
             players=json["players"],
-            faction=Factions.parse(json["owner"]),
+            faction=Faction.parse(json["owner"]),
         )
 
 
@@ -1222,6 +1218,78 @@ class Planet(BaseObject):
         self.biome = biome
         self.enviromentals = enviromentals
         self._cache = {}
+
+    def refresh(self):
+        """
+        Refreshes the planet data.
+
+        Returns:
+            Planet: The refreshed planet.
+        """
+        return self.client.planets.get_planet(self.id)
+
+    @property
+    def planet_info(self) -> PlanetInfo:
+        """
+        Returns the planet info of the planet.
+
+        Returns:
+            PlanetInfo: The planet info of the planet.
+        """
+
+        if self._cache.get("planet_info") is None:
+            self._cache["planet_info"] = self.client.war_info.get_planet_info(self)
+        return self._cache["planet_info"]
+
+    @property
+    def max_health(self):
+        """
+        Returns the maximum health of the planet.
+
+        Returns:
+            int: The maximum health of the planet.
+        """
+        return self.planet_info.max_health
+
+    @property
+    def health(self):
+        """
+        Returns the health of the planet.
+
+        Returns:
+            float: The health of the planet.
+        """
+        return self.status.health
+
+    @property
+    def initial_owner(self):
+        """
+        Returns the initial owner of the planet.
+
+        Returns:
+            Faction: The initial owner of the planet.
+        """
+        return self.planet_info.initial_owner
+
+    @property
+    def position(self):
+        """
+        Returns the position of the planet.
+
+        Returns:
+            tuple: The position of the planet.
+        """
+        return self.planet_info.position
+
+    @property
+    def waypoints(self):
+        """
+        Returns the waypoints of the planet.
+
+        Returns:
+            List[Waypoint]: The waypoints of the planet.
+        """
+        return self.planet_info.waypoints
 
     @property
     def status(self):
@@ -1340,6 +1408,18 @@ class Campaign(BaseObject):
             self._planet = self.client.planets.get_planet(self._planet)
             return self._planet
         return self._planet
+
+    @property
+    def liberation_percentage(self):
+        """
+        Returns the liberation percentage of the campaign.
+
+        Returns:
+            float: The liberation percentage of the campaign.
+        """
+        # {1 - (planet['event']['health'] / planet['event']['maxHealth']):^25}
+
+        return round(100 - ((self.planet.health / self.planet.max_health) * 100), 2)
 
     @classmethod
     def from_json(cls, client, json: dict[str, Any]):
