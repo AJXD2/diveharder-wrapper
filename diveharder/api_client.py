@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import lru_cache
 import logging
 from time import time
 import requests
@@ -13,7 +12,6 @@ from diveharder.api.status import StatusAPI
 from diveharder.api.updates import UpdatesAPI
 from diveharder.api.war_info import WarInfoAPI
 from diveharder.constants import OFFICIAL_DIVEHARDER_URL, __version__
-from diveharder.utils import url_join
 
 
 def retry_adapter(
@@ -86,14 +84,9 @@ class DiveHarderApiClient:
     def game_time(self) -> float:
         return self.status.get_status().time
 
-    @property
-    @lru_cache(maxsize=1)
-    def all(self) -> dict:
-        response = self._session.get(url_join(self._url, "v1", "all"))
-        response.raise_for_status()
-        return response.json()
-
-    def fix_timestamp(self, timestamp: float, as_datetime: bool = False) -> float:
+    def fix_timestamp(
+        self, timestamp: float, as_datetime: bool = False
+    ) -> float | datetime:
         """Fixes the provided timestamp based on the current time."""
 
         fixed_timestamp = (time() - self.game_time) + (timestamp + self.game_time)
