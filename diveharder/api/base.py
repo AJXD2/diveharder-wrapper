@@ -1,10 +1,8 @@
 from diveharder.api.exceptions import BadRequestError, DiveHarderApiError
-from diveharder.constants import REQUEST_TYPES
 from diveharder.utils import url_join
 
 
 class ApiBase:
-
     def __init__(
         self,
         client: any,

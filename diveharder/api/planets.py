@@ -1,10 +1,7 @@
 from functools import lru_cache
-import json
-from pathlib import Path
-from typing import Generator, List, Optional
+from typing import Generator, Optional
 from diveharder.api.base import ApiBase
 from diveharder.objects import Biome, Enviromental, Planet
-from rich import print
 
 
 class Planets(ApiBase):
@@ -36,7 +33,6 @@ class Planets(ApiBase):
             Optional[Planet]: Information about the planet if found, None otherwise.
         """
         for i in self.get_planets():
-
             if int(i.id) == int(id):
                 return i
 
