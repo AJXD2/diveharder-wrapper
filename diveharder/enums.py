@@ -51,7 +51,7 @@ class MajorOrderTypes(BetterEnum):
 # {"1": "Humans", "2": "Terminids", "3": "Automaton", "4": "Illuminate"}
 
 
-class Factions(BetterEnum):
+class Faction(BetterEnum):
     ANY = 0
     HUMANS = 1
     TERMINIDS = 2

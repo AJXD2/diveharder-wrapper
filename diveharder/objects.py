@@ -1,11 +1,9 @@
 from datetime import datetime
-from functools import lru_cache
 import re
 from typing import Any, List, Optional
-
 from diveharder.enums import (
     CampaignTypes,
-    Factions,
+    Faction,
     MajorOrderTypes,
     RewardTypes,
     ValueTypes,
@@ -115,7 +113,7 @@ class HDMLString(BaseObject):
         self.text = text
 
     @property
-    def as_plaintext(self):
+    def as_plaintext(self) -> str:
         """
         Returns the plain text content of the HDML string.
 
@@ -125,7 +123,7 @@ class HDMLString(BaseObject):
         return re.sub(r"<.*?>", "", self.text)
 
     @property
-    def as_md(self):
+    def as_md(self) -> str:
         """
         Returns the Markdown content of the HDML string.
 
@@ -201,12 +199,11 @@ class PlanetStatistics(BaseObject):
         self._planet_index = planetIndex
 
     @property
-    def planet(self):
+    def planet(self) -> "Planet":
         return self.client.planets[self._planet_index]
 
 
 class GalaxyStatistics(BaseObject):
-
     def __init__(
         self,
         client,
@@ -333,10 +330,10 @@ class PlanetInfo(BaseObject):
         self.sector = sector
         self.max_health = max_health
         self.disabled = disabled
-        self.initial_owner = initial_owner
+        self.initial_owner = Faction.parse(initial_owner)
 
     @property
-    def planet(self):
+    def planet(self) -> "Planet":
         """
         Returns the planet associated with this planet info.
 
@@ -346,7 +343,7 @@ class PlanetInfo(BaseObject):
         return self.client.planets[self._index]
 
     @classmethod
-    def from_json(cls, client, json):
+    def from_json(cls, client, json) -> "PlanetInfo":
         """
         Creates a new PlanetInfo instance from the given JSON data.
 
@@ -375,7 +372,7 @@ class HomeWorldInfo(BaseObject):
     Represents information about a home world.
 
     Attributes:
-        race (Factions): The race of the home world.
+        race (Faction): The race of the home world.
         planets (List[Planet]): The planets associated with the home world.
     """
 
@@ -390,11 +387,11 @@ class HomeWorldInfo(BaseObject):
         """
         super().__init__(client)
 
-        self.race = Factions.parse(race)
+        self.race = Faction.parse(race)
         self._planet_ids = planets
 
     @property
-    def planets(self):
+    def planets(self) -> List["Planet"]:
         """
         Returns the planets associated with the home world.
 
@@ -404,7 +401,7 @@ class HomeWorldInfo(BaseObject):
         return [self.client.planets[id] for id in self._planet_ids]
 
     @classmethod
-    def from_json(cls, client, json):
+    def from_json(cls, client, json) -> "HomeWorldInfo":
         """
         Creates a new HomeWorldInfo instance from the given JSON data.
 
@@ -452,7 +449,6 @@ class WarInfo(BaseObject):
         capital_infos: List[Any],
         planet_permanent_effects: List[Any],
     ) -> None:
-
         super().__init__(client)
         self.war_id = war_id
         self._start_date = start_date
@@ -485,7 +481,7 @@ class WarInfo(BaseObject):
         return datetime.fromtimestamp(self._end_date)
 
     @classmethod
-    def from_json(cls, client, json):
+    def from_json(cls, client, json) -> "WarInfo":
         """
         Creates a new WarInfo instance from the given JSON data.
 
@@ -704,15 +700,15 @@ class MajorOrderTask(BaseObject):
         return self.values.get(ValueTypes.GOAL)
 
     @property
-    def race(self) -> Optional["Factions"]:
+    def race(self) -> Optional["Faction"]:
         """
         Returns the race associated with the task.
 
         Returns:
-            Optional[Factions]: The race associated with the task.
+            Optional[Faction]: The race associated with the task.
         """
 
-        return Factions.parse(self.values.get(ValueTypes.RACE))
+        return Faction.parse(self.values.get(ValueTypes.RACE))
 
     # Dont want to have to do it this way but it works :P
     @property
@@ -776,7 +772,6 @@ class MajorOrderProgress(BaseObject):
             MajorOrderTypes.DEFENSE,
             MajorOrderTypes.LIBERATION,
         ):
-
             return self.progress[self.tasks.index(task)] == 1
         elif task.type == MajorOrderTypes.ERADICATE:
             return self.progress[self.tasks.index(task)] == task.values.get(
@@ -907,7 +902,7 @@ class MajorOrder(BaseObject):
             i.major_order = self
 
     @classmethod
-    def from_json(cls: "MajorOrder", client, json):
+    def from_json(cls: "MajorOrder", client, json) -> "MajorOrder":
         """
         Creates a MajorOrder instance from a JSON object.
 
@@ -986,7 +981,7 @@ class Biome(BaseObject):
         self.description = description
 
     @classmethod
-    def from_json(cls, client, json):
+    def from_json(cls, client, json) -> Optional["Biome"]:
         if not isinstance(json, dict):
             return None
         return cls(client, name=json["name"], description=json["description"])
@@ -1025,7 +1020,7 @@ class Enviromental(BaseObject):
         self.description = description
 
     @classmethod
-    def from_json(cls, client, json):
+    def from_json(cls, client, json) -> Optional["Enviromental"]:
         if not isinstance(json, dict):
             return None
         return cls(client, name=json["name"], description=json["description"])
@@ -1126,7 +1121,7 @@ class PlanetStatus(BaseObject):
         health: int,
         regen: float,
         players: int,
-        faction: Factions,
+        faction: Faction,
     ) -> None:
         """
         Initializes a new instance of the PlanetStatus class.
@@ -1146,7 +1141,7 @@ class PlanetStatus(BaseObject):
         self.faction = faction
 
     @property
-    def planet(self):
+    def planet(self) -> "Planet":
         """
         Returns the planet the campaign is on.
 
@@ -1160,7 +1155,7 @@ class PlanetStatus(BaseObject):
         return self._planet
 
     @classmethod
-    def from_json(cls, client, json):
+    def from_json(cls, client, json) -> "PlanetStatus":
         """
         Creates a new PlanetStatus instance from the given JSON data.
 
@@ -1178,7 +1173,7 @@ class PlanetStatus(BaseObject):
             health=json["health"],
             regen=json["regenPerSecond"],
             players=json["players"],
-            faction=Factions.parse(json["owner"]),
+            faction=Faction.parse(json["owner"]),
         )
 
 
@@ -1223,8 +1218,80 @@ class Planet(BaseObject):
         self.enviromentals = enviromentals
         self._cache = {}
 
+    def refresh(self) -> "Planet":
+        """
+        Refreshes the planet data.
+
+        Returns:
+            Planet: The refreshed planet.
+        """
+        return self.client.planets.get_planet(self.id)
+
     @property
-    def status(self):
+    def planet_info(self) -> PlanetInfo:
+        """
+        Returns the planet info of the planet.
+
+        Returns:
+            PlanetInfo: The planet info of the planet.
+        """
+
+        if self._cache.get("planet_info") is None:
+            self._cache["planet_info"] = self.client.war_info.get_planet_info(self)
+        return self._cache["planet_info"]
+
+    @property
+    def max_health(self) -> int:
+        """
+        Returns the maximum health of the planet.
+
+        Returns:
+            int: The maximum health of the planet.
+        """
+        return self.planet_info.max_health
+
+    @property
+    def health(self) -> float:
+        """
+        Returns the health of the planet.
+
+        Returns:
+            float: The health of the planet.
+        """
+        return self.status.health
+
+    @property
+    def initial_owner(self) -> Faction:
+        """
+        Returns the initial owner of the planet.
+
+        Returns:
+            Faction: The initial owner of the planet.
+        """
+        return self.planet_info.initial_owner
+
+    @property
+    def position(self) -> tuple[int, int]:
+        """
+        Returns the position of the planet.
+
+        Returns:
+            tuple: The position of the planet.
+        """
+        return self.planet_info.position
+
+    @property
+    def waypoints(self) -> List[int]:
+        """
+        Returns the waypoints of the planet.
+
+        Returns:
+            List[Waypoint]: The waypoints of the planet.
+        """
+        return self.planet_info.waypoints
+
+    @property
+    def status(self) -> PlanetStatus:
         """
         Returns the status of the planet.
 
@@ -1239,7 +1306,7 @@ class Planet(BaseObject):
         return self._cache["status"]
 
     @property
-    def campaign(self):
+    def campaign(self) -> Optional["Campaign"]:
         """
         Returns the campaign of the planet.
 
@@ -1254,7 +1321,7 @@ class Planet(BaseObject):
         return self._cache["campaign"]
 
     @property
-    def is_part_of_major_order(self):
+    def is_part_of_major_order(self) -> bool:
         mo = self.client.dispatches.get_major_order()
         for i in mo.tasks:
             if i.planet == self:
@@ -1263,7 +1330,7 @@ class Planet(BaseObject):
         return False
 
     @classmethod
-    def from_json(cls, client, json: dict[str, Any]):
+    def from_json(cls, client, json: dict[str, Any]) -> "Planet":
         """
         Creates a new Planet instance from the given JSON data.
 
@@ -1328,7 +1395,7 @@ class Campaign(BaseObject):
         self.count = count
 
     @property
-    def planet(self):
+    def planet(self) -> Planet:
         """
         Returns the planet the campaign is on.
 
@@ -1341,8 +1408,19 @@ class Campaign(BaseObject):
             return self._planet
         return self._planet
 
+    @property
+    def liberation_percentage(self) -> float:
+        """
+        Returns the liberation percentage of the campaign.
+
+        Returns:
+            float: The liberation percentage of the campaign.
+        """
+
+        return round(100 - ((self.planet.health / self.planet.max_health) * 100), 2)
+
     @classmethod
-    def from_json(cls, client, json: dict[str, Any]):
+    def from_json(cls, client, json: dict[str, Any]) -> "Campaign":
         """
         Creates a new Campaign instance from the given JSON data.
 
