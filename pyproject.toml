@@ -1,17 +1,22 @@
 [tool.poetry]
 name = "diveharder"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "A Helldivers 2 API wrapper using the Diveharder API"
 authors = ["AJXD2 <anthonyjohnkovach@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-
+keywords = ["helldivers 2","api","wrapper","diveharder","community"]
+classifiers = [
+    "Topic :: Games :: Helldivers 2",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Wrapper"
+]
 [tool.poetry.scripts]
 diveharder = "diveharder.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-requests = "^2.31.0"
+requests = "^2.32.3"
 fire = "^0.6.0"
 rich = "^13.7.1"
 
