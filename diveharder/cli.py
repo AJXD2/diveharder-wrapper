@@ -1,6 +1,5 @@
 import fire
 from diveharder import DiveHarderApiClient
-from diveharder.constants import __version__
 from rich.console import Console
 from diveharder.enums import MajorOrderTypes
 from rich.table import Table
@@ -8,7 +7,7 @@ from rich.panel import Panel
 from rich.progress import Progress
 from rich.markdown import Markdown
 
-api = DiveHarderApiClient(f"DiveHarderApiWrapper/{__version__}/CLI")
+api = DiveHarderApiClient(f"DiveHarderApiWrapper/CLI")
 con = Console(markup=True)
 
 

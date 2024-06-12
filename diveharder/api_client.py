@@ -11,7 +11,7 @@ from diveharder.api.stats import Statistics
 from diveharder.api.status import StatusAPI
 from diveharder.api.updates import UpdatesAPI
 from diveharder.api.war_info import WarInfoAPI
-from diveharder.constants import OFFICIAL_DIVEHARDER_URL, __version__
+from diveharder.constants import OFFICIAL_DIVEHARDER_URL
 
 
 def retry_adapter(
@@ -40,7 +40,7 @@ def set_logger(debug: bool) -> None:
 class DiveHarderApiClient:
     def __init__(
         self,
-        user_agent: str = f"DiveHarderAPIWrapper/{__version__}",
+        user_agent: str = f"DiveHarderAPIWrapper",
         url: str = OFFICIAL_DIVEHARDER_URL,
         retry_count: int = 5,
         backoff_factor: float = 0.2,
