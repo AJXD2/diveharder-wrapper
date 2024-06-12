@@ -65,3 +65,12 @@ class UpdatesAPI(ApiBase):
             if i.title == title:
                 return i
         return None
+
+    def get_latest_update(self) -> Update:
+        """
+        Get the latest update.
+
+        Returns:
+            Update: The latest update.
+        """
+        return list(self.get_updates())[-1]

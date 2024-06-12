@@ -140,106 +140,127 @@ class PlanetStatistics(BaseObject):
     def __init__(
         self,
         client,
-        missionsWon: int,
-        missionsLost: int,
-        missionTime: int,
-        bugKills: int,
-        automatonKills: int,
-        illuminateKills: int,
-        bulletsFired: int,
-        bulletsHit: int,
-        timePlayed: int,
+        missions_won: int,
+        missions_lost: int,
+        mission_time: int,
+        bug_kills: int,
+        automaton_kills: int,
+        illuminate_kills: int,
+        bullets_fired: int,
+        bullets_hit: int,
+        time_played: int,
         deaths: int,
         revives: int,
         friendlies: int,
-        missionSuccessRate: int,
+        mission_success_rate: int,
         accurracy: int,
-        planetIndex: int,
+        planet_index: int,
     ) -> None:
         """
         A class used to represent the statistics of a planet.
 
         Args:
             client (DiveHarderApiClient): The client object used to make API requests.
-            missionsWon (int): The number of missions won.
-            missionsLost (int): The number of missions lost.
-            missionTime (int): The total time spent on missions.
-            bugKills (int): The number of bug kills.
-            automatonKills (int): The number of automaton kills.
-            illuminateKills (int): The number of illuminate kills.
-            bulletsFired (int): The number of bullets fired.
-            bulletsHit (int): The number of bullets hit.
-            timePlayed (int): The total time played.
+            missions_won (int): The number of missions won.
+            missions_lost (int): The number of missions lost.
+            mission_time (int): The total time spent on missions.
+            bug_kills (int): The number of bug kills.
+            automaton_kills (int): The number of automaton kills.
+            illuminate_kills (int): The number of illuminate kills.
+            bullets_fired (int): The number of bullets fired.
+            bullets_hit (int): The number of bullets hit.
+            time_played (int): The total time played.
             deaths (int): The number of deaths.
             revives (int): The number of revives.
             friendlies (int): The number of friendly kills.
-            missionSuccessRate (int): The success rate of missions.
-            accurracy (int): The accuracy of bullets.
-            planetIndex (int): The index of the planet.
+            mission_success_rate (int): The success rate of missions.
+            accuracy (int): The accuracy of bullets.
+            planet_index (int): The index of the planet.
 
         Returns:
             None
         """
         super().__init__(client)
 
-        self.missionsWon = missionsWon
-        self.missionsLost = missionsLost
-        self.missionTime = missionTime
-        self.bugKills = bugKills
-        self.automatonKills = automatonKills
-        self.illuminateKills = illuminateKills
-        self.bulletsFired = bulletsFired
-        self.bulletsHit = bulletsHit
-        self.timePlayed = timePlayed
+        self.missions_won = missions_won
+        self.missions_lost = missions_lost
+        self.mission_time = mission_time
+        self.bug_kills = bug_kills
+        self.automaton_kills = automaton_kills
+        self.illuminate_kills = illuminate_kills
+        self.bullets_fired = bullets_fired
+        self.bullets_hit = bullets_hit
+        self.time_played = time_played
         self.deaths = deaths
         self.revives = revives
         self.friendlies = friendlies
-        self.missionSuccessRate = missionSuccessRate
+        self.mission_success_rate = mission_success_rate
         self.accurracy = accurracy
-        self._planet_index = planetIndex
+        self._planet_index = planet_index
 
     @property
     def planet(self) -> "Planet":
         return self.client.planets[self._planet_index]
+
+    @classmethod
+    def from_json(cls, client, json):
+        return cls(
+            client,
+            json["missionsWon"],
+            json["missionsLost"],
+            json["missionTime"],
+            json["bugKills"],
+            json["automatonKills"],
+            json["illuminateKills"],
+            json["bulletsFired"],
+            json["bulletsHit"],
+            json["timePlayed"],
+            json["deaths"],
+            json["revives"],
+            json["friendlies"],
+            json["missionSuccessRate"],
+            json["accurracy"],
+            json["planetIndex"],
+        )
 
 
 class GalaxyStatistics(BaseObject):
     def __init__(
         self,
         client,
-        missionsWon: int,
-        missionsLost: int,
-        missionTime: int,
-        bugKills: int,
-        automatonKills: int,
-        illuminateKills: int,
-        bulletsFired: int,
-        bulletsHit: int,
-        timePlayed: int,
+        missions_won: int,
+        missions_lost: int,
+        mission_time: int,
+        bug_kills: int,
+        automaton_kills: int,
+        illuminate_kills: int,
+        bullets_fired: int,
+        bullets_hit: int,
+        time_played: int,
         deaths: int,
         revives: int,
         friendlies: int,
-        missionSuccessRate: int,
-        accurracy: int,
+        mission_success_rate: int,
+        accuracy: int,
     ) -> None:
         """
         A class used to represent the statistics of the galaxy (global statistics).
 
         Args:
             client (DiveHarderApiClient): The client object used to make API requests.
-            missionsWon (int): The number of missions won.
-            missionsLost (int): The number of missions lost.
-            missionTime (int): The total time spent on missions.
-            bugKills (int): The number of bug kills.
-            automatonKills (int): The number of automaton kills.
-            illuminateKills (int): The number of illuminate kills.
-            bulletsFired (int): The number of bullets fired.
-            bulletsHit (int): The number of bullets hit.
-            timePlayed (int): The total time played.
+            missions_won (int): The number of missions won.
+            missions_lost (int): The number of missions lost.
+            mission_time (int): The total time spent on missions.
+            bug_kills (int): The number of bug kills.
+            automaton_kills (int): The number of automaton kills.
+            illuminate_kills (int): The number of illuminate kills.
+            bullets_fired (int): The number of bullets fired.
+            bullets_hit (int): The number of bullets hit.
+            time_played (int): The total time played.
             deaths (int): The number of deaths.
             revives (int): The number of revives.
             friendlies (int): The number of friendly kills.
-            missionSuccessRate (int): The success rate of missions.
+            mission_success_rate (int): The success rate of missions.
             accuracy (int): The accuracy of bullets.
 
         Returns:
@@ -248,20 +269,40 @@ class GalaxyStatistics(BaseObject):
 
         super().__init__(client)
 
-        self.missions_won = missionsWon
-        self.missions_lost = missionsLost
-        self.mission_time = missionTime
-        self.bug_kills = bugKills
-        self.automaton_kills = automatonKills
-        self.illuminate_kills = illuminateKills
-        self.bullets_fired = bulletsFired
-        self.bullets_hit = bulletsHit
-        self.time_played = timePlayed
+        self.missions_won = missions_won
+        self.missions_lost = missions_lost
+        self.mission_time = mission_time
+        self.bug_kills = bug_kills
+        self.automaton_kills = automaton_kills
+        self.illuminate_kills = illuminate_kills
+        self.bullets_fired = bullets_fired
+        self.bullets_hit = bullets_hit
+        self.time_played = time_played
         self.deaths = deaths
         self.revives = revives
         self.friendlies = friendlies
-        self.mission_success_rate = missionSuccessRate
-        self.accurracy = accurracy
+        self.mission_success_rate = mission_success_rate
+        self.accurracy = accuracy
+
+    @classmethod
+    def from_json(cls, client, json):
+        return cls(
+            client,
+            json["missionsWon"],
+            json["missionsLost"],
+            json["missionTime"],
+            json["bugKills"],
+            json["automatonKills"],
+            json["illuminateKills"],
+            json["bulletsFired"],
+            json["bulletsHit"],
+            json["timePlayed"],
+            json["deaths"],
+            json["revives"],
+            json["friendlies"],
+            json["missionSuccessRate"],
+            json["accurracy"],
+        )
 
 
 class GlobalStatistics(BaseObject):

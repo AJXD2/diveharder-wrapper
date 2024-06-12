@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Generator, List, Optional
 
 from requests import Response
@@ -10,6 +11,7 @@ class Dispatches(ApiBase):
     Class for interacting with the Dive Harder API's news feed.
     """
 
+    @lru_cache(maxsize=1)
     def get_dispatches(self) -> Generator[Dispatch, None, None]:
         """
         Get a list of all dispatches from the news feed.
@@ -19,7 +21,6 @@ class Dispatches(ApiBase):
         """
 
         for i in self._api_request("news_feed"):
-
             yield Dispatch.from_json(self._client, i)
 
     def get_dispatch(self, id: int) -> Optional[Dispatch]:
