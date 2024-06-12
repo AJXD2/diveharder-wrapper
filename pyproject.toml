@@ -6,11 +6,13 @@ authors = ["AJXD2 <anthonyjohnkovach@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
+[tool.poetry.scripts]
+diveharder = "diveharder.cli:main"
+
 [tool.poetry.dependencies]
 python = "^3.11"
 requests = "^2.31.0"
-
-[tool.poetry.group.dev.dependencies]
+fire = "^0.6.0"
 rich = "^13.7.1"
 
 [build-system]
