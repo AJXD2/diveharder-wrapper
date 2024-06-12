@@ -2,18 +2,19 @@
 
 A Helldivers 2 API wrapper using the [Diveharder API](https://github.com/helldivers-2/diveharder_api.py).
 
-> [!WARNING]
-> 
-> This project is still under heavy development. Expect things to break in the future. There be dragons ahead.
-
 ## Introduction
 
 This project aims to provide a convenient Python wrapper for the Diveharder API, allowing developers to easily interact with Helldivers 2 game data.
 
 ## Installation
 
-For now, I have decided not to publish this on PyPI as it is in development. However, I have reserved the [diveharder name on PyPI](https://pypi.org/project/diveharder/).
+### PyPI
 
+```sh
+pip install diveharder
+```
+
+### Manual
 1. Clone the repository:
 
     ```sh
