@@ -1,4 +1,6 @@
 # DiveharderWrapper For Python
+> [!CAUTION]
+> This project is undergoing a rewrite. Expect breaking changes.
 
 A Helldivers 2 API wrapper using the [Diveharder API](https://github.com/helldivers-2/diveharder_api.py).
 
