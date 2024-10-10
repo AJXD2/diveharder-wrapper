@@ -1,3 +1,3 @@
-from .api_client import DiveHarderApiClient
+from .api_client import ApiClient
 
-__all__ = ["DiveHarderApiClient"]
+__all__ = ["ApiClient"]
