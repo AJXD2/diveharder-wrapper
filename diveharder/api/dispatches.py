@@ -14,7 +14,7 @@ class DispatchModule(BaseApiModule):
     def __init__(self, api_client: "ApiClient") -> None:
         super().__init__(api_client)
 
-    def get_dispatches(self, old_to_new: bool = False) -> typing.List[models.Dispatch]:
+    def get_dispatches(self, old_to_new: bool = True) -> typing.List[models.Dispatch]:
         """
         Gets the information about the current war.
         """

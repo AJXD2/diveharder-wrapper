@@ -2,8 +2,9 @@ import logging
 import requests
 from requests.adapters import HTTPAdapter, Retry
 from diveharder.constants import OFFICIAL_DIVEHARDER_URL, OFFICIAL_COMMUNITY_URL
-from diveharder.models import APIURLConfiguration
+import diveharder.models as models
 import typing
+import diveharder.api as modules
 
 
 def retry_adapter(
@@ -37,6 +38,13 @@ def set_logger(debug: bool) -> logging.Logger:
             )
         )
     return logger
+
+
+class ModuleDict(typing.TypedDict):
+    """A dictionary of modules."""
+
+    war: modules.WarModule
+    dispatch: modules.DispatchModule
 
 
 class ApiClient:
@@ -75,12 +83,16 @@ class ApiClient:
         """
         self.debug = debug
         self.logger = set_logger(debug)
-        self.api_config = APIURLConfiguration(
+        self.api_config = models.APIURLConfiguration(
             diveharder=diveharder_url, community=community_url
         )
         self._user_contact = user_contact
         self._user_agent = user_agent
         self._setup_session()
+        self._modules = ModuleDict(
+            war=modules.WarModule(self),
+            dispatch=modules.DispatchModule(self),
+        )
 
     def _setup_session(self):
         self.session = requests.Session()
@@ -94,6 +106,22 @@ class ApiClient:
         self.session.mount("https://", retry_adapter(0.2, 5))
         if self.debug:
             self.session.mount("http://", retry_adapter(0.2, 5))
+
+    def get_war_info(self) -> models.WarInfo:
+        return self._modules["war"].get_war_info()
+
+    # ==============[Modules]==============
+
+    def __getitem__(self, key: typing.Literal["war", "dispatch"]) -> object:
+        return self._modules.get(key)
+
+    @property
+    def war(self) -> modules.WarModule:
+        return self._modules["war"]
+
+    @property
+    def dispatch(self) -> modules.DispatchModule:
+        return self._modules["dispatch"]
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.api_config})"
