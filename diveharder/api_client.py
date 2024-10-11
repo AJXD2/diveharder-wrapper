@@ -104,8 +104,7 @@ class ApiClient:
             }
         )
         self.session.mount("https://", retry_adapter(0.2, 5))
-        if self.debug:
-            self.session.mount("http://", retry_adapter(0.2, 5))
+        self.session.mount("http://", retry_adapter(0.2, 5))
 
     def get_war_info(self) -> models.WarInfo:
         return self._modules["war"].get_war_info()

@@ -23,7 +23,7 @@ class DispatchModule(BaseApiModule):
         data = sorted(
             self.get("community", "api", "v1", "dispatches"),
             key=lambda x: x["published"],
-            reverse=old_to_new,
+            reverse=not old_to_new,
         )
 
         return [models.Dispatch(**dispatch) for dispatch in data]
