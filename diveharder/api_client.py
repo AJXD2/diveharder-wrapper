@@ -45,6 +45,7 @@ class ModuleDict(typing.TypedDict):
 
     war: modules.WarModule
     dispatch: modules.DispatchModule
+    steam: modules.SteamModule
 
 
 class ApiClient:
@@ -92,6 +93,7 @@ class ApiClient:
         self._modules = ModuleDict(
             war=modules.WarModule(self),
             dispatch=modules.DispatchModule(self),
+            steam=modules.SteamModule(self),
         )
 
     def _setup_session(self):
@@ -121,6 +123,10 @@ class ApiClient:
     @property
     def dispatch(self) -> modules.DispatchModule:
         return self._modules["dispatch"]
+
+    @property
+    def steam(self) -> modules.SteamModule:
+        return self._modules["steam"]
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.api_config})"

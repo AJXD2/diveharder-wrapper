@@ -16,18 +16,6 @@ class ClientTest(unittest.TestCase):
     def test_get_war_info(self):
         war_info = self.client.get_war_info()
         self.assertIsInstance(war_info, models.WarInfo)
-        print("War Info:")
-        print("\tTime:")
-        print(f"\t  Started: {war_info.started}")
-        print(f"\t  Now: {war_info.now}")
-        print(f"\t  Ended: {war_info.ended}")
-        print("\tFactions:")
-        for i in war_info.factions:
-            print(f"\t  - {i}")
-        print(f"\tImpact Mult: {war_info.impact_multiplier}")
-        print("\tStatistics:")
-        for k, v in war_info.statistics.model_dump().items():
-            print(f"\t  - {k}: {v}")
 
     def test_get_all_dispatches(self):
         dispatch_module = self.client.dispatch
@@ -41,3 +29,18 @@ class ClientTest(unittest.TestCase):
         second = dispatches[0]
         self.assertEqual(first, self.client.dispatch.get_dispatch(first.id))
         self.assertEqual(second, self.client.dispatch.get_dispatch(second.id))
+
+    def test_get_all_steam_news(self):
+        steam_news = self.client.steam.get_all_steam_news()
+        self.assertIsInstance(steam_news, list)
+        self.assertIsInstance(steam_news[0], models.SteamNews)
+
+    def test_get_steam_news(self):
+        data = self.client.steam.get_all_steam_news()
+        testing_id = data[0].id
+        steam_news = self.client.steam.get_steam_news(testing_id)
+        self.assertIsInstance(steam_news, models.SteamNews)
+
+
+if __name__ == "__main__":
+    unittest.main()

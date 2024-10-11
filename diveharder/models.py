@@ -47,3 +47,14 @@ class Dispatch(BaseModel):
     published: datetime
     type: typing.Literal[0]
     message: str
+
+
+class SteamNews(BaseModel):
+    """Steam patchh notes."""
+
+    id: str
+    title: str
+    url: str
+    author: str
+    content: str
+    published_at: datetime = Field(alias="publishedAt")
