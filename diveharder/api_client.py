@@ -26,7 +26,7 @@ def set_logger(debug: bool) -> logging.Logger:
     from rich.logging import RichHandler
 
     logger = logging.getLogger(__name__)
-    logger.level = logging.DEBUG
+    logger.level = logging.DEBUG if debug else 5000
     if debug:
         logger.addHandler(
             RichHandler(
@@ -46,6 +46,7 @@ class ModuleDict(typing.TypedDict):
     war: modules.WarModule
     dispatch: modules.DispatchModule
     steam: modules.SteamModule
+    assignments: modules.AssignmentsModule
 
 
 class ApiClient:
@@ -94,6 +95,7 @@ class ApiClient:
             war=modules.WarModule(self),
             dispatch=modules.DispatchModule(self),
             steam=modules.SteamModule(self),
+            assignments=modules.AssignmentsModule(self),
         )
 
     def _setup_session(self):
@@ -127,6 +129,14 @@ class ApiClient:
     @property
     def steam(self) -> modules.SteamModule:
         return self._modules["steam"]
+
+    @property
+    def assignments(self) -> modules.AssignmentsModule:
+        return self._modules["assignments"]
+
+    @property
+    def major_orders(self) -> modules.AssignmentsModule:
+        return self.assignments
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.api_config})"

@@ -22,9 +22,9 @@ class CampaignTypes(BetterEnum):
 class ValueTypes(BetterEnum):
     RACE = 1
     UNKNOWN = 2
-    GOAL = 3
+    TARGET_COUNT = 3
     LIBERATE = 11
-    PLANET_INDEX = 12
+    PLANET = 12
 
 
 # {
@@ -41,7 +41,7 @@ class RewardTypes(BetterEnum):
 # {"3": "Eradicate", "11": "Liberation", "12": "Defense", "13": "Control"}
 
 
-class MajorOrderTypes(BetterEnum):
+class AssignmentTypes(BetterEnum):
     ERADICATE = 3
     LIBERATION = 11
     DEFENSE = 12
