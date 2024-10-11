@@ -9,6 +9,8 @@ class ClientTest(unittest.TestCase):
             user_agent="AJXD2",
             user_contact="aj@ajxd2.dev",
             debug=True,
+            community_url="http://localhost:9090",
+            diveharder_url="http://localhost:9091",
         )
 
     def test_get_war_info(self):
