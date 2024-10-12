@@ -1,5 +1,8 @@
 import typing
 import requests
+from diveharder.utils import (
+    DiveHarderAPIConnectionError,
+)
 
 if typing.TYPE_CHECKING:
     from diveharder.api_client import ApiClient
@@ -24,9 +27,15 @@ class BaseApiModule:
         try:
             response = self.session.get(
                 url=f"{self.diveharder_url if url == 'diveharder' else self.community_url}/{'/'.join(path)}",
+                timeout=4,
             )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
             self.logger.error(f"HTTPError: {e}")
             return {}
+        except requests.exceptions.ConnectionError as e:
+            self.logger.error(f"ConnectionError: {e}")
+            raise DiveHarderAPIConnectionError(
+                f"Failed to connect to {self.diveharder_url if url == "diveharder" else self.community_url}. (Offline?)"
+            )

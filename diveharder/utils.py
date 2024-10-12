@@ -36,3 +36,11 @@ def hdml_to_md(text: str) -> str:
 def url_join(*args):
     """Join combine URL parts to get the full endpoint address."""
     return "/".join(arg.strip("/") for arg in args)
+
+
+class DiveHarderException(Exception):
+    """Base exception for all DiveHarder exceptions."""
+
+
+class DiveHarderAPIConnectionError(DiveHarderException):
+    """Exception raised when the DiveHarder API connection fails."""
