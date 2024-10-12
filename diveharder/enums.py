@@ -1,4 +1,5 @@
 from enum import Enum
+import typing
 
 # {"1": "race", "2": "unknown", "3": "goal", "11": "liberate", "12": "planet_index"}
 
@@ -27,18 +28,12 @@ class ValueTypes(BetterEnum):
     PLANET = 12
 
 
-# {
-#     "2": "Planet Index"
-# }
 class Values(BetterEnum):
     PLANET_INDEX = 2
 
 
 class RewardTypes(BetterEnum):
     MEDALS = 1
-
-
-# {"3": "Eradicate", "11": "Liberation", "12": "Defense", "13": "Control"}
 
 
 class AssignmentTypes(BetterEnum):
@@ -48,12 +43,4 @@ class AssignmentTypes(BetterEnum):
     CONTROL = 13
 
 
-# {"1": "Humans", "2": "Terminids", "3": "Automaton", "4": "Illuminate"}
-
-
-class Faction(BetterEnum):
-    ANY = 0
-    HUMANS = 1
-    TERMINIDS = 2
-    AUTOMATON = 3
-    ILLUMINATE = 4
+FactionType = typing.Literal["Humans", "Terminids", "Automaton", "Illuminate"]

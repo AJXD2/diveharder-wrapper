@@ -58,6 +58,26 @@ class ClientTest(unittest.TestCase):
             assignment, self.client.assignments.get_assignment(assignment.id)
         )
 
+    def test_get_all_planets(self):
+        planets = self.client.planets.get_planets()
+        self.assertIsInstance(planets, list)
+        for planet in planets:
+            self._test_planet(planet)
+
+    def _test_planet(self, planet: models.Planet):
+        self.assertIsInstance(planet, models.Planet)
+        self.assertIsInstance(planet.index, int)
+        self.assertIsInstance(planet.name, str)
+        self.assertIn(
+            planet.current_owner, ["Humans", "Terminids", "Automaton", "Illuminate"]
+        )
+
+    def test_get_planet(self):
+        planets = self.client.planets.get_planets()
+        planet = planets[0]
+        self.assertAlmostEqual(planet, self.client.planets.get_planet(planet.index))  # type: ignore
+        self._test_planet(self.client.planets.get_planet(planet.index))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -9,7 +9,7 @@ class APIURLConfiguration(BaseModel):
     community: str
 
 
-class GlobalStatistics(BaseModel):
+class Statistics(BaseModel):
     """The statistics of a player."""
 
     missions_won: int = Field(alias="missionsWon")
@@ -38,7 +38,7 @@ class WarInfo(BaseModel):
     client_version: str = Field(alias="clientVersion")
     factions: list[typing.Literal["Humans", "Terminids", "Automaton", "Illuminate"]]
     impact_multiplier: float = Field(alias="impactMultiplier")
-    statistics: GlobalStatistics
+    statistics: Statistics
 
 
 class Dispatch(BaseModel):
@@ -65,7 +65,7 @@ class SteamNews(BaseModel):
 class AssignmentTaskData(typing.TypedDict):
     """task data"""
 
-    race: enums.Faction | None
+    race: enums.FactionType | None
     target_count: int | None
     # TODO: implement the actual planet
     planet: int | None
@@ -115,3 +115,130 @@ class Assignment(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.title} - {self.briefing}"
+
+
+"""
+[
+  {
+    "index": 0,
+    "name": "string",
+    "sector": "string",
+    "biome": {
+      "name": "string",
+      "description": "string"
+    },
+    "hazards": [
+      {
+        "name": "string",
+        "description": "string"
+      }
+    ],
+    "hash": 0,
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "waypoints": [
+      0
+    ],
+    "maxHealth": 0,
+    "health": 0,
+    "disabled": true,
+    "initialOwner": "string",
+    "currentOwner": "string",
+    "regenPerSecond": 0,
+    "event": {
+      "id": 0,
+      "eventType": 0,
+      "faction": "string",
+      "health": 0,
+      "maxHealth": 0,
+      "startTime": "2024-10-12T02:39:12.326Z",
+      "endTime": "2024-10-12T02:39:12.326Z",
+      "campaignId": 0,
+      "jointOperationIds": [
+        0
+      ]
+    },
+    "statistics": {
+      "missionsWon": 0,
+      "missionsLost": 0,
+      "missionTime": 0,
+      "terminidKills": 0,
+      "automatonKills": 0,
+      "illuminateKills": 0,
+      "bulletsFired": 0,
+      "bulletsHit": 0,
+      "timePlayed": 0,
+      "deaths": 0,
+      "revives": 0,
+      "friendlies": 0,
+      "missionSuccessRate": 0,
+      "accuracy": 0,
+      "playerCount": 0
+    },
+    "attacking": [
+      0
+    ]
+  }
+]
+"""
+
+
+class Position(BaseModel):
+    """A position in the game."""
+
+    x: float
+    y: float
+
+
+class PlanetEvent(BaseModel):
+    """An event on a planet."""
+
+    id: int
+    event_type: typing.Literal[1]
+    faction: enums.FactionType
+    health: int
+    max_health: int = Field(alias="maxHealth")
+    start_time: datetime = Field(alias="startTime")
+    end_time: datetime = Field(alias="endTime")
+    campaign_id: int = Field(alias="campaignId")
+    joint_operation_ids: list[int] = Field(alias="jointOperationIds")
+
+
+class PlanetaryHazard(BaseModel):
+    """A hazard on a planet."""
+
+    name: str
+    description: str
+
+
+class Biome(BaseModel):
+    """A biome on a planet."""
+
+    name: str
+    description: str
+
+
+class Planet(BaseModel):
+    """A planet in the game."""
+
+    index: int
+    name: str
+    sector: str
+    biome: Biome
+    hazards: list[PlanetaryHazard]
+    hash: int
+    position: Position
+    waypoints: list[int]
+    max_health: int = Field(alias="maxHealth")
+    health: int
+    disabled: bool
+    initial_owner: enums.FactionType = Field(
+        alias="initialOwner",
+    )
+    current_owner: enums.FactionType = Field(alias="currentOwner")
+    regen_per_second: float = Field(alias="regenPerSecond")
+    event: PlanetEvent | None
+    statistics: Statistics
+    attacking: list[int]

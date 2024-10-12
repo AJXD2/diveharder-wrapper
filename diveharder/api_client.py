@@ -47,6 +47,7 @@ class ModuleDict(typing.TypedDict):
     dispatch: modules.DispatchModule
     steam: modules.SteamModule
     assignments: modules.AssignmentsModule
+    planets: modules.PlanetsModule
 
 
 class ApiClient:
@@ -96,6 +97,7 @@ class ApiClient:
             dispatch=modules.DispatchModule(self),
             steam=modules.SteamModule(self),
             assignments=modules.AssignmentsModule(self),
+            planets=modules.PlanetsModule(self),
         )
 
     def _setup_session(self):
@@ -137,6 +139,10 @@ class ApiClient:
     @property
     def major_orders(self) -> modules.AssignmentsModule:
         return self.assignments
+
+    @property
+    def planets(self) -> modules.PlanetsModule:
+        return self._modules["planets"]
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.api_config})"
