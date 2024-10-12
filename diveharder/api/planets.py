@@ -13,6 +13,7 @@ class PlanetsModule(BaseApiModule):
 
     def __init__(self, api_client: "ApiClient") -> None:
         super().__init__(api_client)
+        self._planets: list[models.Planet] = []
 
     def get_planets(self) -> typing.List[models.Planet]:
         """Get all planets
@@ -21,9 +22,11 @@ class PlanetsModule(BaseApiModule):
             typing.List[models.Planet]: The list of planet objects
         """
         data = self.get("community", "api", "v1", "planets")
-        return [models.Planet(**planet) for planet in data]
 
-    def get_planet(self, index: int) -> models.Planet:
+        self._planets = [models.Planet(**planet) for planet in data]
+        return self._planets
+
+    def get_planet(self, index: int, cached: bool = False) -> models.Planet:
         """Gets a planet using the index
 
         Args:
@@ -32,6 +35,11 @@ class PlanetsModule(BaseApiModule):
         Returns:
             models.Planet: The planet object
         """
+        if cached:
+            if len(self._planets) < index:
+                self.logger.warning(f"Planet {index} not cached. Fetching from API.")
+                return self.get_planet(index)
+            return self._planets[index]
         data = self.get("community", "api", "v1", "planets", str(index))
         return models.Planet(**data)
 

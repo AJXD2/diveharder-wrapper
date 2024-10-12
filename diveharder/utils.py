@@ -1,4 +1,6 @@
 import re
+from diveharder.constants import FACTIONS
+import diveharder.enums as enums
 
 
 def hdml_to_md(text: str) -> str:
@@ -36,6 +38,18 @@ def hdml_to_md(text: str) -> str:
 def url_join(*args):
     """Join combine URL parts to get the full endpoint address."""
     return "/".join(arg.strip("/") for arg in args)
+
+
+def parse_faction(faction: int) -> enums.FactionType | None:
+    """Parse faction ID to string
+
+    Args:
+        faction (int): The faction ID
+
+    Returns:
+        str: The faction name
+    """
+    return FACTIONS.get(faction, None)  # type: ignore
 
 
 class DiveHarderException(Exception):

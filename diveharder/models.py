@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 import typing
 import diveharder.enums as enums
+import diveharder.utils as utils
 
 
 class APIURLConfiguration(BaseModel):
@@ -61,15 +62,71 @@ class SteamNews(BaseModel):
     published_at: datetime = Field(alias="publishedAt")
 
 
-# TODO: make better docstrings
-class AssignmentTaskData(typing.TypedDict):
-    """task data"""
+class PlanetEvent(BaseModel):
+    """An event on a planet."""
 
-    race: enums.FactionType | None
-    target_count: int | None
-    # TODO: implement the actual planet
-    planet: int | None
+    id: int
+    event_type: typing.Literal[1] = Field(alias="eventType")
+    faction: enums.FactionType
+    health: int
+    max_health: int = Field(alias="maxHealth")
+    start_time: datetime = Field(alias="startTime")
+    end_time: datetime = Field(alias="endTime")
+    campaign_id: int = Field(alias="campaignId")
+    joint_operation_ids: list[int] = Field(alias="jointOperationIds")
+
+
+class Position(BaseModel):
+    """A position in the game."""
+
+    x: float
+    y: float
+
+
+class PlanetaryHazard(BaseModel):
+    """A hazard on a planet."""
+
+    name: str
+    description: str
+
+
+class Biome(BaseModel):
+    """A biome on a planet."""
+
+    name: str
+    description: str
+
+
+class Planet(BaseModel):
+    """A planet in the game."""
+
+    index: int
+    name: str
+    sector: str
+    biome: "Biome"
+    hazards: list["PlanetaryHazard"]
+    hash: int
+    position: "Position"
+    waypoints: list[int]
+    max_health: int = Field(alias="maxHealth")
+    health: int
+    disabled: bool
+    initial_owner: enums.FactionType = Field(
+        alias="initialOwner",
+    )
+    current_owner: enums.FactionType = Field(alias="currentOwner")
+    regen_per_second: float = Field(alias="regenPerSecond")
+    event: PlanetEvent | None
+    statistics: Statistics
+    attacking: list[int]
+
+
+# TODO: make better docstrings
+class AssignmentTaskData(BaseModel):
     liberate: bool | None
+    planet: Planet | None
+    target_count: int | None
+    race: enums.FactionType | None
 
 
 class AssignmentTask(BaseModel):
@@ -83,11 +140,22 @@ class AssignmentTask(BaseModel):
     )
 
     def model_post_init(self, __context: typing.Any) -> None:
+        from diveharder.api_client import ApiClient
+
+        client = ApiClient._instance
+        if client is None:
+            raise ValueError("ApiClient is not initialized")
+
         for k, v in zip(self.value_types, self.values):
-            if k == enums.ValueTypes.LIBERATE:
-                self.data["liberate"] = bool(v)
-            else:
-                self.data[k.name.lower()] = v  # type: ignore
+            match (k):
+                case enums.ValueTypes.PLANET:
+                    self.data.planet = client.planets.get_planet(v, cached=True)
+                case enums.ValueTypes.RACE:
+                    self.data.race = utils.parse_faction(v)
+                case enums.ValueTypes.TARGET_COUNT:
+                    self.data.target_count = v
+                case enums.ValueTypes.LIBERATE:
+                    self.data.liberate = bool(v)
 
 
 class AssignmentReward(BaseModel):
@@ -111,134 +179,11 @@ class Assignment(BaseModel):
 
     @property
     def is_complete(self) -> bool:
-        return self.progress == [1] * len(self.tasks)
+        for index, task in enumerate(self.tasks):
+            if task.data.target_count == self.progress[index]:
+                continue
+            return False
+        return True
 
     def __str__(self) -> str:
         return f"{self.title} - {self.briefing}"
-
-
-"""
-[
-  {
-    "index": 0,
-    "name": "string",
-    "sector": "string",
-    "biome": {
-      "name": "string",
-      "description": "string"
-    },
-    "hazards": [
-      {
-        "name": "string",
-        "description": "string"
-      }
-    ],
-    "hash": 0,
-    "position": {
-      "x": 0,
-      "y": 0
-    },
-    "waypoints": [
-      0
-    ],
-    "maxHealth": 0,
-    "health": 0,
-    "disabled": true,
-    "initialOwner": "string",
-    "currentOwner": "string",
-    "regenPerSecond": 0,
-    "event": {
-      "id": 0,
-      "eventType": 0,
-      "faction": "string",
-      "health": 0,
-      "maxHealth": 0,
-      "startTime": "2024-10-12T02:39:12.326Z",
-      "endTime": "2024-10-12T02:39:12.326Z",
-      "campaignId": 0,
-      "jointOperationIds": [
-        0
-      ]
-    },
-    "statistics": {
-      "missionsWon": 0,
-      "missionsLost": 0,
-      "missionTime": 0,
-      "terminidKills": 0,
-      "automatonKills": 0,
-      "illuminateKills": 0,
-      "bulletsFired": 0,
-      "bulletsHit": 0,
-      "timePlayed": 0,
-      "deaths": 0,
-      "revives": 0,
-      "friendlies": 0,
-      "missionSuccessRate": 0,
-      "accuracy": 0,
-      "playerCount": 0
-    },
-    "attacking": [
-      0
-    ]
-  }
-]
-"""
-
-
-class Position(BaseModel):
-    """A position in the game."""
-
-    x: float
-    y: float
-
-
-class PlanetEvent(BaseModel):
-    """An event on a planet."""
-
-    id: int
-    event_type: typing.Literal[1]
-    faction: enums.FactionType
-    health: int
-    max_health: int = Field(alias="maxHealth")
-    start_time: datetime = Field(alias="startTime")
-    end_time: datetime = Field(alias="endTime")
-    campaign_id: int = Field(alias="campaignId")
-    joint_operation_ids: list[int] = Field(alias="jointOperationIds")
-
-
-class PlanetaryHazard(BaseModel):
-    """A hazard on a planet."""
-
-    name: str
-    description: str
-
-
-class Biome(BaseModel):
-    """A biome on a planet."""
-
-    name: str
-    description: str
-
-
-class Planet(BaseModel):
-    """A planet in the game."""
-
-    index: int
-    name: str
-    sector: str
-    biome: Biome
-    hazards: list[PlanetaryHazard]
-    hash: int
-    position: Position
-    waypoints: list[int]
-    max_health: int = Field(alias="maxHealth")
-    health: int
-    disabled: bool
-    initial_owner: enums.FactionType = Field(
-        alias="initialOwner",
-    )
-    current_owner: enums.FactionType = Field(alias="currentOwner")
-    regen_per_second: float = Field(alias="regenPerSecond")
-    event: PlanetEvent | None
-    statistics: Statistics
-    attacking: list[int]
