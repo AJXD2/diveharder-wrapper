@@ -49,7 +49,7 @@ class ClientTest(unittest.TestCase):
         self.assertIsInstance(assignments[0].id, int)
         self.assertIsInstance(assignments[0].tasks, list)
         self.assertIsInstance(assignments[0].tasks[0], models.AssignmentTask)
-        self.assertIsInstance(assignments[0].tasks[0].data, dict)
+        self.assertIsInstance(assignments[0].tasks[0].data, models.AssignmentTaskData)
 
     def test_get_assignment(self):
         assignments = self.client.assignments.get_all_assignments()
