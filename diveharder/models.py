@@ -187,3 +187,12 @@ class Assignment(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.title} - {self.briefing}"
+
+
+class Campaign(BaseModel):
+    """A campaign or battle in the game."""
+
+    id: int
+    planet: Planet
+    type: int
+    count: int

@@ -78,6 +78,28 @@ class ClientTest(unittest.TestCase):
         self.assertAlmostEqual(planet, self.client.planets.get_planet(planet.index))  # type: ignore
         self._test_planet(self.client.planets.get_planet(planet.index))
 
+    def test_get_campaigns(self):
+        campaigns = self.client.campaigns.get_campaigns()
+        self.assertIsInstance(campaigns, list)
+        self.assertTrue(len(campaigns) > 0)
+        for campaign in campaigns:
+            self.assertIsInstance(campaign, models.Campaign)
+            self._test_campaign(campaign)
+
+    def test_get_campaign(self):
+        campaigns = self.client.campaigns.get_campaigns()
+        campaign = campaigns[0]
+        retrieved_campaign = self.client.campaigns.get_campaign(campaign.id)
+        self.assertEqual(campaign, retrieved_campaign)
+        self._test_campaign(retrieved_campaign)
+
+    def _test_campaign(self, campaign: models.Campaign):
+        self.assertIsInstance(campaign.id, int)
+        self.assertIsInstance(campaign.planet, models.Planet)
+        self.assertIsInstance(campaign.type, int)
+        self.assertIsInstance(campaign.count, int)
+        self._test_planet(campaign.planet)
+
 
 if __name__ == "__main__":
     unittest.main()

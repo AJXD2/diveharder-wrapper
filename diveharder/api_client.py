@@ -48,6 +48,7 @@ class ModuleDict(typing.TypedDict):
     steam: modules.SteamModule
     assignments: modules.AssignmentsModule
     planets: modules.PlanetsModule
+    campaigns: modules.CampaignModule
 
 
 class ApiClient:
@@ -98,6 +99,7 @@ class ApiClient:
             steam=modules.SteamModule(self),
             assignments=modules.AssignmentsModule(self),
             planets=modules.PlanetsModule(self),
+            campaigns=modules.CampaignModule(self),
         )
 
     def _setup_session(self):
@@ -143,6 +145,10 @@ class ApiClient:
     @property
     def planets(self) -> modules.PlanetsModule:
         return self._modules["planets"]
+
+    @property
+    def campaigns(self) -> modules.CampaignModule:
+        return self._modules["campaigns"]
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.api_config})"
