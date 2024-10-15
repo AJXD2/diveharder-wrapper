@@ -8,7 +8,12 @@ if typing.TYPE_CHECKING:
 
 class PlanetsModule(BaseApiModule):
     """
-    The Planets API module.
+    The Planets API module. This module is used to interact with the planets.
+
+    Methods:
+        get_planets(): Gets all planets.
+        get_planet(index: int): Gets a planet using the index.
+        get_planets_with_events(): Gets all planets with events.
     """
 
     def __init__(self, api_client: "ApiClient") -> None:
@@ -44,7 +49,7 @@ class PlanetsModule(BaseApiModule):
         data = self.get("community", "api", "v1", "planets", str(index))
         return models.Planet(**data)
 
-    def get_all_planets_with_events(self) -> typing.List[models.Planet]:
+    def get_planets_with_events(self) -> typing.List[models.Planet]:
         """Gets all planets with an active event
 
         Returns:

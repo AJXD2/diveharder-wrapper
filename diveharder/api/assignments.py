@@ -8,7 +8,12 @@ if typing.TYPE_CHECKING:
 
 class AssignmentsModule(BaseApiModule):
     """
-    The Assignments API module.
+    The Assignments API module (Major Order). This module is used to interact with the current major order(s).
+
+    Methods:
+        get_all_assignments(): Gets all current assignments
+        get_assignment(assignment_id: int): Gets one assignment using the assignment ID
+
     """
 
     def __init__(self, api_client: "ApiClient") -> None:

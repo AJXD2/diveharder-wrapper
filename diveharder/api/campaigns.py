@@ -8,7 +8,12 @@ if typing.TYPE_CHECKING:
 
 class CampaignModule(BaseApiModule):
     """
-    The Campaign API module.
+    The Campaign API module. This module is used to interact with all campaigns (Battles/Planets that are accessible).
+
+    Methods:
+        get_campaigns(): Gets all current active campaigns.
+        get_campaign(campaign_id: int): Gets a campaign by its ID.
+
     """
 
     def __init__(self, api_client: "ApiClient") -> None:

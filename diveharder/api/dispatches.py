@@ -7,8 +7,12 @@ if typing.TYPE_CHECKING:
 
 
 class DispatchModule(BaseApiModule):
-    """
-    The Dispatch API module.
+    """The Dispatch API module. This module is used to interact with all dispatches (Ingame News)
+
+    Methods:
+        get_dispatches(old_to_new: bool): Gets all dispatches and orders them based on the `old_to_new` argument.
+        get_dispatch(dispatch_id: int): Gets a dispatch by its ID.
+
     """
 
     def __init__(self, api_client: "ApiClient") -> None:

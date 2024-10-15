@@ -8,7 +8,11 @@ if typing.TYPE_CHECKING:
 
 class SteamModule(BaseApiModule):
     """
-    The Steam API module.
+    The Steam API module. Used to get all the Game updates and News.
+
+    Methods:
+        get_all_steam_news(): Gets all the steam news.
+        get_steam_news(gid: str): Gets a steam news item by its ID.
     """
 
     def __init__(self, api_client: "ApiClient") -> None:

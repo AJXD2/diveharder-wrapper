@@ -7,8 +7,10 @@ if typing.TYPE_CHECKING:
 
 
 class WarModule(BaseApiModule):
-    """
-    The War API module.
+    """The War module of the API. This module is used to get all info about the current war.
+
+    Methods:
+        get_war_info(): Gets the information about the current war.
     """
 
     def __init__(self, api_client: "ApiClient") -> None:
