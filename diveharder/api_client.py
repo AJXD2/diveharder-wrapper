@@ -111,16 +111,13 @@ class ApiClient:
                 "X-Super-Contact": self._user_contact,
             }
         )
-        self.session.mount("https://", retry_adapter(0.2, 5))
-        self.session.mount("http://", retry_adapter(0.2, 5))
+        self.session.mount("https://", retry_adapter(0.2, 2))
+        self.session.mount("http://", retry_adapter(0.2, 2))
 
     def get_war_info(self) -> models.WarInfo:
         return self._modules["war"].get_war_info()
 
     # ==============[Modules]==============
-
-    def __getitem__(self, key: typing.Literal["war", "dispatch"]) -> object:
-        return self._modules.get(key)
 
     @property
     def war(self) -> modules.WarModule:
